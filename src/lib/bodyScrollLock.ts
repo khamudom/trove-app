@@ -63,7 +63,9 @@ export function unlockBodyScroll() {
   body.style.paddingRight = snapshot.bodyPaddingRight
   const scrollY = snapshot.scrollY
   snapshot = null
-  window.scrollTo(0, scrollY)
+  if (typeof window.scrollTo === 'function') {
+    window.scrollTo(0, scrollY)
+  }
 }
 
 export function resetBodyScrollLockForTests() {
