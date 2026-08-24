@@ -8,7 +8,7 @@ const MOBILE_MEDIA_QUERY = '(max-width: 959px)'
 const TRANSITION_DURATION_MS = 260
 
 type AnimatedScreen = {
-  key: string
+  pathname: string
   navIndex: number
   node: ReturnType<typeof useOutlet>
 }
@@ -56,7 +56,7 @@ export function AppShell() {
   const outletRef = useRef(outlet)
   const [isMobile, setIsMobile] = useState(getIsMobile)
   const [activeScreen, setActiveScreen] = useState<AnimatedScreen>(() => ({
-    key: location.key,
+    pathname: location.pathname,
     navIndex: getNavIndex(location.pathname),
     node: outlet,
   }))
@@ -83,12 +83,14 @@ export function AppShell() {
   }, [])
 
   useLayoutEffect(() => {
-    if (activeScreen.key === location.key) {
+    // Identify screens by pathname so query-string updates (e.g. /search?q=)
+    // keep the current page mounted instead of remounting it.
+    if (activeScreen.pathname === location.pathname) {
       return
     }
 
     const nextScreen: AnimatedScreen = {
-      key: location.key,
+      pathname: location.pathname,
       navIndex: getNavIndex(location.pathname),
       node: outletRef.current,
     }
@@ -116,7 +118,7 @@ export function AppShell() {
       setTransition(null)
       timeoutRef.current = null
     }, TRANSITION_DURATION_MS)
-  }, [activeScreen, isMobile, location.key, location.pathname])
+  }, [activeScreen, isMobile, location.pathname])
 
   useEffect(() => {
     return () => {
@@ -148,11 +150,11 @@ export function AppShell() {
         <main className={styles.main}>
           <div className={`${styles.viewport} ${transition ? styles.viewportTransitioning : ''}`}>
             {transition ? (
-              <PageScreen key={transition.from.key} className={exitClass}>
+              <PageScreen key={transition.from.pathname} className={exitClass}>
                 {transition.from.node}
               </PageScreen>
             ) : null}
-            <PageScreen key={activeScreen.key} className={enterClass}>
+            <PageScreen key={activeScreen.pathname} className={enterClass}>
               {activeScreen.node}
             </PageScreen>
           </div>
