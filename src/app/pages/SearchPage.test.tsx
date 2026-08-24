@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createLocalRepository } from '@/repositories/localRepository'
+import { createLocalRepository } from '@/repositories'
 import { AppShell } from '../AppShell'
 import { SearchPage } from './SearchPage'
 
