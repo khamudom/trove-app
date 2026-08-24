@@ -1,4 +1,3 @@
-import { createSeedData } from '@/lib/seedData'
 import { createId, normalizeText, nowIso } from '@/lib/utils'
 import type {
   Bin,
@@ -14,15 +13,26 @@ import type {
 } from '@/types'
 import type { TroveRepository } from './types'
 
-const STORAGE_KEY = 'trove-local-data'
+const STORAGE_KEY = 'trove-local-data-v2'
 const RECENT_KEY = 'trove-recent-bins'
+const LEGACY_STORAGE_KEY = 'trove-local-data'
 
 interface Store {
   bins: Bin[]
   items: Item[]
 }
 
+function emptyStore(): Store {
+  return { bins: [], items: [] }
+}
+
 function loadStore(): Store {
+  // Drop the previous mock-seeded local store so the app starts empty.
+  if (localStorage.getItem(LEGACY_STORAGE_KEY) !== null) {
+    localStorage.removeItem(LEGACY_STORAGE_KEY)
+    localStorage.removeItem(RECENT_KEY)
+  }
+
   const raw = localStorage.getItem(STORAGE_KEY)
   if (raw) {
     try {
@@ -31,8 +41,7 @@ function loadStore(): Store {
       // fall through
     }
   }
-  const seed = createSeedData()
-  const store = { bins: seed.bins, items: seed.items }
+  const store = emptyStore()
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
   return store
 }
@@ -238,4 +247,6 @@ export function trackRecentBin(id: string): void {
 
 export function clearLocalStore(): void {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(LEGACY_STORAGE_KEY)
+  localStorage.removeItem(RECENT_KEY)
 }
