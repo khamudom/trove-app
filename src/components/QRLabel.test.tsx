@@ -9,7 +9,7 @@ vi.mock('qrcode', () => ({
 }))
 
 describe('QRLabel', () => {
-  it('renders a print target on document.body and disables print until the QR loads', async () => {
+  it('renders the printable label and disables print until the QR loads', async () => {
     render(<QRLabel binName="Toolbox" qrToken="qr-toolbox" />)
 
     const printButton = screen.getByRole('button', { name: 'Print label' })
@@ -19,9 +19,9 @@ describe('QRLabel', () => {
       expect(printButton).toBeEnabled()
     })
 
-    const printArea = document.body.querySelector('.print-area')
+    const printArea = document.querySelector('.print-area')
     expect(printArea).toBeTruthy()
     expect(printArea?.querySelector('img')).toBeTruthy()
-    expect(screen.getAllByRole('img', { name: 'QR code for Toolbox' })).toHaveLength(2)
+    expect(screen.getByRole('img', { name: 'QR code for Toolbox' })).toBeInTheDocument()
   })
 })
