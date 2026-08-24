@@ -1,5 +1,5 @@
-import { Suspense, lazy, type ReactElement } from 'react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Suspense, lazy, useEffect, type ReactElement } from 'react'
+import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router-dom'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -24,7 +24,10 @@ function mockMatchMedia(matches: boolean) {
   })
 }
 
-function renderShell(lazyBins = false) {
+function renderShell(
+  lazyBins = false,
+  options?: { initialEntry?: string; searchPage?: () => ReactElement },
+) {
   let resolveBins: ((value: { default: () => ReactElement }) => void) | undefined
   const BinsPage = lazyBins
     ? lazy(
@@ -34,24 +37,17 @@ function renderShell(lazyBins = false) {
           }),
       )
     : () => <div>Bins page</div>
+  const SearchPage = options?.searchPage ?? (() => <div>Search page</div>)
 
   const view = render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={[options?.initialEntry ?? '/']}>
       <Suspense fallback={<p>App loading</p>}>
         <Routes>
           <Route element={<AppShell />}>
             <Route index element={<div>Home page</div>} />
             <Route path="bins" element={<BinsPage />} />
             <Route path="scan" element={<div>Scan page</div>} />
-            <Route
-              path="search"
-              element={
-                <div>
-                  Search page
-                  <SearchField value="" onChange={() => undefined} autoFocus />
-                </div>
-              }
-            />
+            <Route path="search" element={<SearchPage />} />
             <Route path="profile" element={<div>Profile page</div>} />
           </Route>
         </Routes>
@@ -99,7 +95,14 @@ describe('AppShell mobile page transitions', () => {
 
   it('slides search in from the right on the first visit', async () => {
     const user = userEvent.setup()
-    const { nav } = renderShell()
+    const { nav } = renderShell(false, {
+      searchPage: () => (
+        <div>
+          Search page
+          <SearchField value="" onChange={() => undefined} autoFocus />
+        </div>
+      ),
+    })
 
     await user.click(within(nav()).getByRole('link', { name: 'Search' }))
 
@@ -132,5 +135,39 @@ describe('AppShell mobile page transitions', () => {
     expect(document.querySelector(`.${styles.enterFromRight}`)).toBeNull()
     expect(screen.getByText('Bins page')).toBeInTheDocument()
     expect(screen.queryByText('Home page')).not.toBeInTheDocument()
+  })
+
+  it('does not remount the current page when only the query string changes', async () => {
+    const user = userEvent.setup()
+    let mounts = 0
+
+    function SearchProbe() {
+      const [params, setParams] = useSearchParams()
+      useEffect(() => {
+        mounts += 1
+      }, [])
+
+      return (
+        <div>
+          <div>Search page</div>
+          <div>query:{params.get('q') ?? ''}</div>
+          <button type="button" onClick={() => setParams({ q: 'tool' })}>
+            Apply query
+          </button>
+        </div>
+      )
+    }
+
+    renderShell(false, { initialEntry: '/search', searchPage: SearchProbe })
+
+    expect(screen.getByText('Search page')).toBeInTheDocument()
+    expect(mounts).toBe(1)
+
+    await user.click(screen.getByRole('button', { name: 'Apply query' }))
+
+    expect(screen.getByText('query:tool')).toBeInTheDocument()
+    expect(screen.getByText('Search page')).toBeInTheDocument()
+    expect(document.querySelector(`.${styles.enterFromRight}`)).toBeNull()
+    expect(mounts).toBe(1)
   })
 })
