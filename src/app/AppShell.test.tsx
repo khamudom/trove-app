@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router-dom'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { SearchField } from '@/components/SearchField'
 import { AppShell } from './AppShell'
 import styles from './AppShell.module.css'
 
@@ -90,6 +91,25 @@ describe('AppShell mobile page transitions', () => {
 
     expect(document.querySelector(`.${styles.enterFromLeft}`)).toBeTruthy()
     expect(document.querySelector(`.${styles.exitToRight}`)).toBeTruthy()
+  })
+
+  it('slides search in from the right on the first visit', async () => {
+    const user = userEvent.setup()
+    const { nav } = renderShell(false, {
+      searchPage: () => (
+        <div>
+          Search page
+          <SearchField value="" onChange={() => undefined} autoFocus />
+        </div>
+      ),
+    })
+
+    await user.click(within(nav()).getByRole('link', { name: 'Search' }))
+
+    expect(document.querySelector(`.${styles.enterFromRight}`)).toBeTruthy()
+    expect(document.querySelector(`.${styles.exitToLeft}`)).toBeTruthy()
+    expect(screen.getByText('Search page')).toBeInTheDocument()
+    expect(screen.getByRole('searchbox', { name: 'Search Trove' })).toBeInTheDocument()
   })
 
   it('animates the first visit to a page that is still loading', async () => {

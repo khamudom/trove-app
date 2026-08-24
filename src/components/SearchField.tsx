@@ -1,6 +1,11 @@
+import { useEffect, useRef } from 'react'
 import { Button } from '@khamudom/lumen-ui-react'
 import { Icons } from './Icons'
 import styles from './SearchField.module.css'
+
+/** Keep in sync with AppShell mobile page transition duration. */
+const MOBILE_PAGE_TRANSITION_MS = 260
+const MOBILE_MEDIA_QUERY = '(max-width: 959px)'
 
 interface SearchFieldProps {
   value: string
@@ -12,6 +17,10 @@ interface SearchFieldProps {
   id?: string
 }
 
+function getIsMobile() {
+  return typeof window.matchMedia === 'function' && window.matchMedia(MOBILE_MEDIA_QUERY).matches
+}
+
 export function SearchField({
   value,
   onChange,
@@ -21,6 +30,23 @@ export function SearchField({
   autoFocus = false,
   id = 'global-search',
 }: SearchFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!autoFocus) {
+      return
+    }
+
+    // Delay focus on mobile until the tab slide finishes. Focusing mid-transition
+    // pans the visual viewport toward the translated input and looks like overshoot.
+    const delay = getIsMobile() ? MOBILE_PAGE_TRANSITION_MS + 20 : 0
+    const timeoutId = window.setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true })
+    }, delay)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [autoFocus])
+
   return (
     <form
       className={styles.field}
@@ -32,12 +58,12 @@ export function SearchField({
     >
       <Icons.Search className={styles.searchIcon} />
       <input
+        ref={inputRef}
         id={id}
         className={styles.input}
         type="search"
         value={value}
         placeholder={placeholder}
-        autoFocus={autoFocus}
         aria-label="Search Trove"
         onChange={(event) => onChange(event.target.value)}
       />
