@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@khamudom/lumen-ui-react'
+import { PwaUpdateToast } from '@/components/PwaUpdateToast'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { useOverlayBodyScrollLock } from '@/hooks/useOverlayBodyScrollLock'
 import { AppShell } from './AppShell'
@@ -44,6 +45,7 @@ export function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppRoutes />
+          <PwaUpdateToast />
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
