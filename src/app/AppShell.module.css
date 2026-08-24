@@ -21,6 +21,10 @@
   min-width: 0;
 }
 
+.loading {
+  color: var(--color-ink-muted);
+}
+
 .sidebar {
   display: none;
 }
@@ -37,19 +41,19 @@
   }
 
   .enterFromRight {
-    animation: slideInFromRight 260ms ease;
+    animation: slideInFromRight 260ms ease both;
   }
 
   .enterFromLeft {
-    animation: slideInFromLeft 260ms ease;
+    animation: slideInFromLeft 260ms ease both;
   }
 
   .exitToLeft {
-    animation: slideOutToLeft 260ms ease;
+    animation: slideOutToLeft 260ms ease both;
   }
 
   .exitToRight {
-    animation: slideOutToRight 260ms ease;
+    animation: slideOutToRight 260ms ease both;
   }
 }
 

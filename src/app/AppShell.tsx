@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useLayoutEffect, useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { BottomNavigation } from '@/components/BottomNavigation'
 import { navItems } from '@/components/navItems'
@@ -33,11 +33,28 @@ function getTransitionDirection(previousIndex: number, nextIndex: number): Trans
   return nextIndex > previousIndex ? 'forward' : 'backward'
 }
 
+function getIsMobile() {
+  if (typeof window.matchMedia !== 'function') {
+    return true
+  }
+
+  return window.matchMedia(MOBILE_MEDIA_QUERY).matches
+}
+
+function PageScreen({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={[styles.screen, className].filter(Boolean).join(' ')}>
+      <Suspense fallback={<p className={styles.loading}>Loading…</p>}>{children}</Suspense>
+    </div>
+  )
+}
+
 export function AppShell() {
   const location = useLocation()
   const outlet = useOutlet()
   const timeoutRef = useRef<number | null>(null)
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_MEDIA_QUERY).matches)
+  const outletRef = useRef(outlet)
+  const [isMobile, setIsMobile] = useState(getIsMobile)
   const [activeScreen, setActiveScreen] = useState<AnimatedScreen>(() => ({
     key: location.key,
     navIndex: getNavIndex(location.pathname),
@@ -49,7 +66,13 @@ export function AppShell() {
     direction: TransitionDirection
   } | null>(null)
 
+  outletRef.current = outlet
+
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') {
+      return
+    }
+
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY)
     const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches)
 
@@ -59,7 +82,7 @@ export function AppShell() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (activeScreen.key === location.key) {
       return
     }
@@ -67,9 +90,8 @@ export function AppShell() {
     const nextScreen: AnimatedScreen = {
       key: location.key,
       navIndex: getNavIndex(location.pathname),
-      node: outlet,
+      node: outletRef.current,
     }
-
     const direction = isMobile ? getTransitionDirection(activeScreen.navIndex, nextScreen.navIndex) : null
 
     if (timeoutRef.current !== null) {
@@ -94,7 +116,7 @@ export function AppShell() {
       setTransition(null)
       timeoutRef.current = null
     }, TRANSITION_DURATION_MS)
-  }, [activeScreen, isMobile, location.key, location.pathname, outlet])
+  }, [activeScreen, isMobile, location.key, location.pathname])
 
   useEffect(() => {
     return () => {
@@ -103,6 +125,11 @@ export function AppShell() {
       }
     }
   }, [])
+
+  const enterClass =
+    transition?.direction === 'forward' ? styles.enterFromRight : transition ? styles.enterFromLeft : undefined
+  const exitClass =
+    transition?.direction === 'forward' ? styles.exitToLeft : transition ? styles.exitToRight : undefined
 
   return (
     <div className={styles.shell}>
@@ -121,25 +148,13 @@ export function AppShell() {
         <main className={styles.main}>
           <div className={`${styles.viewport} ${transition ? styles.viewportTransitioning : ''}`}>
             {transition ? (
-              <>
-                <div
-                  className={`${styles.screen} ${
-                    transition.direction === 'forward' ? styles.exitToLeft : styles.exitToRight
-                  }`}
-                >
-                  {transition.from.node}
-                </div>
-                <div
-                  className={`${styles.screen} ${
-                    transition.direction === 'forward' ? styles.enterFromRight : styles.enterFromLeft
-                  }`}
-                >
-                  {transition.to.node}
-                </div>
-              </>
-            ) : (
-              <div className={styles.screen}>{activeScreen.node}</div>
-            )}
+              <PageScreen key={transition.from.key} className={exitClass}>
+                {transition.from.node}
+              </PageScreen>
+            ) : null}
+            <PageScreen key={activeScreen.key} className={enterClass}>
+              {activeScreen.node}
+            </PageScreen>
           </div>
         </main>
         <BottomNavigation />
