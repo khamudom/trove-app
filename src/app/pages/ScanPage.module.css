@@ -8,6 +8,13 @@
   color: var(--color-ink-muted);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
 .viewfinder {
   position: relative;
   overflow: hidden;

@@ -109,7 +109,7 @@ npm run build
 - No anonymous Supabase users
 - No cross-device sync without account sign-in
 - Public QR lookup requires Supabase (local-only bins have no public token)
-- In-app QR scanning depends on `BarcodeDetector` support; native camera deep links always work
+- In-app QR scanning uses the device camera via `getUserMedia` (native `BarcodeDetector` when available, jsQR fallback for Safari/iOS); if camera permission is denied, scan the QR label with the phone camera app instead
 - Account recovery and identity providers deferred
 - Bidirectional sync / conflict resolution deferred
 
