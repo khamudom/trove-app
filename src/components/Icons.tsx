@@ -37,6 +37,15 @@ Icons.Search = function SearchIcon({ className }: { className?: string }) {
   )
 }
 
+Icons.Profile = function ProfileIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <circle cx="12" cy="8" r="3.25" />
+      <path d="M5.5 19.5c1.4-3.2 3.8-4.75 6.5-4.75s5.1 1.55 6.5 4.75" />
+    </svg>
+  )
+}
+
 Icons.Mic = function MicIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>

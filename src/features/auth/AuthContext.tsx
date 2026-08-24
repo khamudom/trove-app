@@ -10,7 +10,7 @@ interface AuthContextValue {
   isLoading: boolean
   userEmail?: string
   repo: TroveRepository
-  signUp: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   migrateLocalData: () => Promise<void>
@@ -52,10 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string) => {
     const client = getSupabaseClient()
     if (!client) throw new Error('Supabase is not configured')
-    const { error } = await client.auth.signUp({ email, password })
+    const { data, error } = await client.auth.signUp({ email, password })
     if (error) throw error
+    if (!data.session) return { needsConfirmation: true }
     setIsSignedIn(true)
+    setUserEmail(data.session.user.email ?? email)
     await migrateLocalToAccount(localRepo, supabaseRepo!)
+    return { needsConfirmation: false }
   }
 
   const signIn = async (email: string, password: string) => {
