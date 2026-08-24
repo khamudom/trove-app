@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { AlertDialog, Badge, Button, Drawer, Toast } from '@khamudom/lumen-ui-react'
+import { AlertDialog, Badge, Button, Dialog, Drawer, Toast } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ItemCard } from '@/components/ItemCard'
 import { QRLabel } from '@/components/QRLabel'
@@ -21,7 +21,6 @@ export function BinDetailPage() {
   const { bin, loading, refresh } = useBinDetail(binId)
   const [addItemOpen, setAddItemOpen] = useState(false)
   const [editBinOpen, setEditBinOpen] = useState(false)
-  const editBinOpenedAt = useRef(0)
   const [editItemId, setEditItemId] = useState<string | null>(null)
   const [deleteBinOpen, setDeleteBinOpen] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
@@ -77,7 +76,7 @@ export function BinDetailPage() {
       <div className={styles.actions}>
         <Button variant="secondary" onClick={() => setAddItemOpen(true)}>Add item</Button>
         <Button variant="secondary" onClick={openQr}>QR label</Button>
-        <Button variant="ghost" onClick={() => { editBinOpenedAt.current = Date.now(); setEditBinOpen(true) }}>Edit bin</Button>
+        <Button variant="ghost" onClick={() => setEditBinOpen(true)}>Edit bin</Button>
         <Button variant="ghost" onClick={() => setDeleteBinOpen(true)}>Delete bin</Button>
       </div>
 
@@ -160,10 +159,7 @@ export function BinDetailPage() {
         )}
       </Drawer>
 
-      <Drawer open={editBinOpen} heading="Edit bin" right onOpenChange={(open) => {
-        if (!open && Date.now() - editBinOpenedAt.current < 300) return
-        setEditBinOpen(open)
-      }}>
+      <Dialog open={editBinOpen} heading="Edit bin" onOpenChange={setEditBinOpen}>
         <BinForm
           initial={bin}
           submitLabel="Save bin"
@@ -173,7 +169,7 @@ export function BinDetailPage() {
             await refresh()
           }}
         />
-      </Drawer>
+      </Dialog>
 
       <Drawer open={qrOpen} heading="Print QR label" right onOpenChange={setQrOpen}>
         {bin.qrToken && <QRLabel binName={bin.name} qrToken={bin.qrToken} onClose={() => setQrOpen(false)} />}
