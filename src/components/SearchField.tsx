@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Button } from '@khamudom/lumen-ui-react'
 import { Icons } from './Icons'
 import styles from './SearchField.module.css'
@@ -21,6 +22,17 @@ export function SearchField({
   autoFocus = false,
   id = 'global-search',
 }: SearchFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!autoFocus) {
+      return
+    }
+
+    // Avoid native autofocus scroll-into-view, which fights mobile page slide transitions.
+    inputRef.current?.focus({ preventScroll: true })
+  }, [autoFocus])
+
   return (
     <form
       className={styles.field}
@@ -32,12 +44,12 @@ export function SearchField({
     >
       <Icons.Search className={styles.searchIcon} />
       <input
+        ref={inputRef}
         id={id}
         className={styles.input}
         type="search"
         value={value}
         placeholder={placeholder}
-        autoFocus={autoFocus}
         aria-label="Search Trove"
         onChange={(event) => onChange(event.target.value)}
       />

@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { SearchField } from '@/components/SearchField'
 import { AppShell } from './AppShell'
 import styles from './AppShell.module.css'
 
@@ -42,7 +43,15 @@ function renderShell(lazyBins = false) {
             <Route index element={<div>Home page</div>} />
             <Route path="bins" element={<BinsPage />} />
             <Route path="scan" element={<div>Scan page</div>} />
-            <Route path="search" element={<div>Search page</div>} />
+            <Route
+              path="search"
+              element={
+                <div>
+                  Search page
+                  <SearchField value="" onChange={() => undefined} autoFocus />
+                </div>
+              }
+            />
             <Route path="profile" element={<div>Profile page</div>} />
           </Route>
         </Routes>
@@ -86,6 +95,20 @@ describe('AppShell mobile page transitions', () => {
 
     expect(document.querySelector(`.${styles.enterFromLeft}`)).toBeTruthy()
     expect(document.querySelector(`.${styles.exitToRight}`)).toBeTruthy()
+  })
+
+  it('autofocuses search without scroll-into-view during the slide-in', async () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+    const user = userEvent.setup()
+    const { nav } = renderShell()
+
+    await user.click(within(nav()).getByRole('link', { name: 'Search' }))
+
+    expect(document.querySelector(`.${styles.enterFromRight}`)).toBeTruthy()
+    expect(screen.getByRole('searchbox', { name: 'Search Trove' })).toHaveFocus()
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true })
+
+    focus.mockRestore()
   })
 
   it('animates the first visit to a page that is still loading', async () => {
