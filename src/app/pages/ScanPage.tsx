@@ -1,72 +1,118 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
+import { canUseInAppCamera, createQrFrameScanner, extractTroveBinPath } from '@/lib/qrScan'
 import styles from './ScanPage.module.css'
+
+type ScanStatus = 'starting' | 'live' | 'unavailable'
+
+const UNSUPPORTED_MESSAGE =
+  'This browser cannot open the camera inside the app. Use your phone camera app to scan a Trove QR label instead.'
 
 export function ScanPage() {
   const navigate = useNavigate()
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [supported, setSupported] = useState<boolean | null>(null)
-  const [error, setError] = useState('')
+  const cameraSupported = canUseInAppCamera()
+  const [status, setStatus] = useState<ScanStatus>(cameraSupported ? 'starting' : 'unavailable')
+  const [error, setError] = useState(cameraSupported ? '' : UNSUPPORTED_MESSAGE)
+  const [restartKey, setRestartKey] = useState(0)
+
+  const retry = useCallback(() => {
+    if (!canUseInAppCamera()) {
+      setStatus('unavailable')
+      setError(UNSUPPORTED_MESSAGE)
+      return
+    }
+    setError('')
+    setStatus('starting')
+    setRestartKey((key) => key + 1)
+  }, [])
 
   useEffect(() => {
-    const hasDetector = 'BarcodeDetector' in window
-    setSupported(hasDetector)
-    if (!hasDetector) return
+    if (!canUseInAppCamera()) return
 
     let stream: MediaStream | null = null
-    let frame = 0
+    let cancelled = false
+    let timer = 0
+    const scanner = createQrFrameScanner()
+
+    const stop = () => {
+      window.clearTimeout(timer)
+      scanner.dispose()
+      stream?.getTracks().forEach((track) => track.stop())
+      stream = null
+      if (videoRef.current) videoRef.current.srcObject = null
+    }
 
     const start = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        })
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
         }
 
-        const Detector = (window as unknown as { BarcodeDetector: new (opts: { formats: string[] }) => { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> } }).BarcodeDetector
-        const detector = new Detector({ formats: ['qr_code'] })
+        const video = videoRef.current
+        if (!video) {
+          setStatus('unavailable')
+          setError('Camera view failed to load. Try again.')
+          stop()
+          return
+        }
+
+        video.srcObject = stream
+        await video.play()
+        if (cancelled) return
+        setStatus('live')
 
         const tick = async () => {
-          if (!videoRef.current) return
+          if (cancelled || !videoRef.current) return
           try {
-            const codes = await detector.detect(videoRef.current)
-            const match = codes.find((code) => /\/b\/[a-f0-9]+/i.test(code.rawValue))
-            if (match) {
-              const url = new URL(match.rawValue)
-              navigate(url.pathname)
+            const raw = await scanner.detect(videoRef.current)
+            const path = raw ? extractTroveBinPath(raw) : null
+            if (path) {
+              navigate(path)
               return
             }
           } catch {
-            // continue scanning
+            // Keep scanning on transient decode errors.
           }
-          frame = requestAnimationFrame(() => void tick())
+          timer = window.setTimeout(() => void tick(), 180)
         }
 
         void tick()
       } catch {
-        setError('Camera unavailable. You can still scan with your phone camera app.')
-        setSupported(false)
+        if (cancelled) return
+        setStatus('unavailable')
+        setError('Camera permission is required to scan inside the app. Allow camera access, or scan the QR label with your phone camera app.')
+        stop()
       }
     }
 
     void start()
 
     return () => {
-      cancelAnimationFrame(frame)
-      stream?.getTracks().forEach((track) => track.stop())
+      cancelled = true
+      stop()
     }
-  }, [navigate])
+  }, [navigate, restartKey])
 
-  if (supported === false) {
+  if (status === 'unavailable') {
     return (
       <div className={styles.page}>
         <EmptyState
-          title="Use your phone camera"
-          description={error || 'Point your camera at a Trove QR label. It will open the bin contents instantly — no sign-in required.'}
-          action={<Button variant="secondary" onClick={() => navigate('/bins')}>Browse bins</Button>}
+          title="Camera unavailable"
+          description={error || 'Allow camera access to scan Trove QR labels inside the app.'}
+          action={(
+            <div className={styles.actions}>
+              <Button variant="primary" onClick={retry}>Try camera again</Button>
+              <Button variant="secondary" onClick={() => navigate('/bins')}>Browse bins</Button>
+            </div>
+          )}
         />
       </div>
     )
@@ -76,10 +122,14 @@ export function ScanPage() {
     <div className={styles.page}>
       <header>
         <h1>Scan</h1>
-        <p className={styles.subtitle}>Align a Trove QR label inside the frame.</p>
+        <p className={styles.subtitle}>
+          {status === 'starting'
+            ? 'Starting camera…'
+            : 'Align a Trove QR label inside the frame.'}
+        </p>
       </header>
       <div className={styles.viewfinder}>
-        <video ref={videoRef} className={styles.video} muted playsInline />
+        <video ref={videoRef} className={styles.video} muted playsInline autoPlay />
         <div className={styles.frame} aria-hidden />
       </div>
     </div>
