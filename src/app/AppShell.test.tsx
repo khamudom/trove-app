@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, type ReactElement } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -24,11 +24,11 @@ function mockMatchMedia(matches: boolean) {
 }
 
 function renderShell(lazyBins = false) {
-  let resolveBins: ((value: { default: () => JSX.Element }) => void) | undefined
+  let resolveBins: ((value: { default: () => ReactElement }) => void) | undefined
   const BinsPage = lazyBins
     ? lazy(
         () =>
-          new Promise<{ default: () => JSX.Element }>((resolve) => {
+          new Promise<{ default: () => ReactElement }>((resolve) => {
             resolveBins = resolve
           }),
       )
