@@ -13,8 +13,88 @@
   padding: var(--space-6) var(--space-4) calc(var(--nav-height) + var(--space-8));
 }
 
+.viewport {
+  position: relative;
+}
+
+.screen {
+  min-width: 0;
+}
+
+.loading {
+  color: var(--color-ink-muted);
+}
+
 .sidebar {
   display: none;
+}
+
+@media (max-width: 959px) {
+  .viewportTransitioning {
+    display: grid;
+    overflow: hidden;
+  }
+
+  .viewportTransitioning .screen {
+    grid-area: 1 / 1;
+    width: 100%;
+  }
+
+  .enterFromRight {
+    animation: slideInFromRight 260ms ease both;
+  }
+
+  .enterFromLeft {
+    animation: slideInFromLeft 260ms ease both;
+  }
+
+  .exitToLeft {
+    animation: slideOutToLeft 260ms ease both;
+  }
+
+  .exitToRight {
+    animation: slideOutToRight 260ms ease both;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @media (min-width: 960px) {

@@ -3,13 +3,13 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@khamudom/lumen-ui-react'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AppShell } from './AppShell'
+import { BinsPage } from './pages/BinsPage'
+import { HomePage } from './pages/HomePage'
+import { ProfilePage } from './pages/ProfilePage'
+import { ScanPage } from './pages/ScanPage'
+import { SearchPage } from './pages/SearchPage'
 
-const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })))
-const BinsPage = lazy(() => import('./pages/BinsPage').then((m) => ({ default: m.BinsPage })))
 const BinDetailPage = lazy(() => import('./pages/BinDetailPage').then((m) => ({ default: m.BinDetailPage })))
-const SearchPage = lazy(() => import('./pages/SearchPage').then((m) => ({ default: m.SearchPage })))
-const ScanPage = lazy(() => import('./pages/ScanPage').then((m) => ({ default: m.ScanPage })))
-const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 const PublicBinPage = lazy(() => import('./pages/PublicBinPage').then((m) => ({ default: m.PublicBinPage })))
 
 function Loading() {
