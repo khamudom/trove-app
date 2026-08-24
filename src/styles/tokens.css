@@ -70,6 +70,8 @@
   --lumen-font-family: var(--font-ui);
   --lumen-button-radius: var(--radius-full);
   --lumen-button-min-height: var(--touch-min);
+  /* >= 16px so iOS Safari does not auto-zoom focused inputs and leave the page zoomed. */
+  --lumen-input-font-size: var(--text-base);
   --lumen-input-min-height: var(--touch-min);
   --lumen-card-bg: var(--color-paper-elevated);
   --lumen-card-border: var(--color-border);
