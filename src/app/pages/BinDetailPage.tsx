@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { AlertDialog, Badge, Button, Drawer, Toast } from '@khamudom/lumen-ui-react'
+import { AlertDialog, Badge, Button, Dialog, Drawer, Toast } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ItemCard } from '@/components/ItemCard'
 import { QRLabel } from '@/components/QRLabel'
@@ -159,7 +159,7 @@ export function BinDetailPage() {
         )}
       </Drawer>
 
-      <Drawer open={editBinOpen} heading="Edit bin" right onOpenChange={setEditBinOpen}>
+      <Dialog open={editBinOpen} heading="Edit bin" onOpenChange={setEditBinOpen}>
         <BinForm
           initial={bin}
           submitLabel="Save bin"
@@ -169,7 +169,7 @@ export function BinDetailPage() {
             await refresh()
           }}
         />
-      </Drawer>
+      </Dialog>
 
       <Drawer open={qrOpen} heading="Print QR label" right onOpenChange={setQrOpen}>
         {bin.qrToken && <QRLabel binName={bin.name} qrToken={bin.qrToken} onClose={() => setQrOpen(false)} />}
