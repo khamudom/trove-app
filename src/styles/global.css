@@ -66,6 +66,13 @@ select {
   font: inherit;
 }
 
+/* Native fields (e.g. search) also need >= 16px to avoid iOS Safari focus zoom. */
+input,
+textarea,
+select {
+  font-size: max(16px, 1em);
+}
+
 button {
   cursor: pointer;
 }
