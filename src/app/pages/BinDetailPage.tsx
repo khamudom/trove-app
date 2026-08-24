@@ -171,9 +171,9 @@ export function BinDetailPage() {
         />
       </Dialog>
 
-      <Drawer open={qrOpen} heading="Print QR label" right onOpenChange={setQrOpen}>
+      <Dialog open={qrOpen} heading="Print QR label" onOpenChange={setQrOpen}>
         {bin.qrToken && <QRLabel binName={bin.name} qrToken={bin.qrToken} onClose={() => setQrOpen(false)} />}
-      </Drawer>
+      </Dialog>
 
       <AuthGateSheet
         open={authGateOpen}
