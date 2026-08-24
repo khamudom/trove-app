@@ -59,24 +59,26 @@ export function HomePage() {
         <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
       </div>
 
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2>Recent bins</h2>
-        </div>
-        <div className={styles.grid}>
-          {recentBins.map((bin) => (
-            <BinCard
-              key={bin.id}
-              id={bin.id}
-              name={bin.name}
-              location={bin.location}
-              category={bin.category}
-              itemCount={counts[bin.id] ?? 0}
-              previewImage={bin.previewImage}
-            />
-          ))}
-        </div>
-      </section>
+      {recentBins.length > 0 ? (
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2>Recent bins</h2>
+          </div>
+          <div className={styles.grid}>
+            {recentBins.map((bin) => (
+              <BinCard
+                key={bin.id}
+                id={bin.id}
+                name={bin.name}
+                location={bin.location}
+                category={bin.category}
+                itemCount={counts[bin.id] ?? 0}
+                previewImage={bin.previewImage}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <Drawer open={createOpen} heading="Create bin" right onOpenChange={setCreateOpen}>
         <BinForm
