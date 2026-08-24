@@ -126,7 +126,7 @@ export function BinDetailPage() {
         </div>
       )}
 
-      <Drawer open={addItemOpen} heading="Add item" right onOpenChange={setAddItemOpen}>
+      <Dialog open={addItemOpen} heading="Add item" onOpenChange={setAddItemOpen}>
         <ItemForm
           keepOpen
           submitLabel="Add item"
@@ -136,7 +136,7 @@ export function BinDetailPage() {
             await refresh()
           }}
         />
-      </Drawer>
+      </Dialog>
 
       <Drawer
         open={Boolean(editingItem)}
