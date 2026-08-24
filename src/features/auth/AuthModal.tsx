@@ -1,6 +1,5 @@
-import { useEffect, useId, useState } from 'react'
-import { Button } from '@/components/Button'
-import { Icons } from '@/components/Icons'
+import { useState } from 'react'
+import { Alert, AlertDescription, Button, Dialog, Input } from '@khamudom/lumen-ui-react'
 import { useAuth } from './AuthContext'
 import styles from './AuthModal.module.css'
 
@@ -24,25 +23,12 @@ export function AuthModal({
   onSuccess,
 }: AuthModalProps) {
   const { isConfigured, signIn, signUp } = useAuth()
-  const titleId = useId()
-  const descriptionId = useId()
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
-
-  useEffect(() => {
-    if (!open) return
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [open, onClose])
-
-  if (!open) return null
 
   const heading = title ?? (mode === 'sign-up' ? 'Create an account' : 'Sign in')
   const copy = description ?? (mode === 'sign-up'
@@ -72,90 +58,76 @@ export function AuthModal({
   }
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <h2 id={titleId} className={styles.title}>{needsConfirmation ? 'Check your email' : heading}</h2>
-          <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
-            <Icons.Close aria-hidden />
-          </button>
-        </div>
-
-        {needsConfirmation ? (
-          <div className={styles.content}>
-            <p id={descriptionId} className={styles.copy}>
-              We sent a confirmation link to {email}. Confirm your email, then sign in.
-            </p>
-            <Button
-              fullWidth
-              onClick={() => {
-                setNeedsConfirmation(false)
-                setMode('sign-in')
-                setPassword('')
-              }}
-            >
-              Sign in
-            </Button>
-          </div>
-        ) : (
-          <form
-            className={styles.content}
-            onSubmit={(event) => {
-              event.preventDefault()
-              void submit()
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose()
+      }}
+      heading={needsConfirmation ? 'Check your email' : heading}
+      description={needsConfirmation
+        ? `We sent a confirmation link to ${email}. Confirm your email, then sign in.`
+        : copy}
+    >
+      {needsConfirmation ? (
+        <Button
+          fullWidth
+          onClick={() => {
+            setNeedsConfirmation(false)
+            setMode('sign-in')
+            setPassword('')
+          }}
+        >
+          Sign in
+        </Button>
+      ) : (
+        <form
+          className={styles.form}
+          onSubmit={(event) => {
+            event.preventDefault()
+            void submit()
+          }}
+        >
+          {!isConfigured && (
+            <Alert>
+              <AlertDescription>
+                Supabase is not configured yet. Trove will keep working locally, but accounts require environment setup.
+              </AlertDescription>
+            </Alert>
+          )}
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            required
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <Input
+            label="Password"
+            type="password"
+            autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
+            value={password}
+            required
+            minLength={6}
+            error={error || undefined}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <Button type="submit" fullWidth loading={loading} disabled={!isConfigured}>
+            {mode === 'sign-up' ? 'Create account' : 'Sign in'}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            fullWidth
+            onClick={() => {
+              setMode(mode === 'sign-up' ? 'sign-in' : 'sign-up')
+              setError('')
             }}
           >
-            <p id={descriptionId} className={styles.copy}>{copy}</p>
-            {!isConfigured && (
-              <p className={styles.notice}>
-                Supabase is not configured yet. Trove will keep working locally, but accounts require environment setup.
-              </p>
-            )}
-            <label className={styles.field}>
-              <span>Email</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                required
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span>Password</span>
-              <input
-                type="password"
-                autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
-                value={password}
-                required
-                minLength={6}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
-            {error && <p className={styles.error} role="alert">{error}</p>}
-            <Button type="submit" fullWidth disabled={loading || !isConfigured}>
-              {mode === 'sign-up' ? 'Create account' : 'Sign in'}
-            </Button>
-            <button
-              type="button"
-              className={styles.switch}
-              onClick={() => {
-                setMode(mode === 'sign-up' ? 'sign-in' : 'sign-up')
-                setError('')
-              }}
-            >
-              {mode === 'sign-up' ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+            {mode === 'sign-up' ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
+          </Button>
+        </form>
+      )}
+    </Dialog>
   )
 }

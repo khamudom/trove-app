@@ -1,4 +1,4 @@
-import styles from './VoiceStatus.module.css'
+import { Banner, BannerDescription, BannerTitle } from '@khamudom/lumen-ui-react'
 
 interface VoiceStatusProps {
   status: 'idle' | 'listening' | 'processing' | 'done' | 'error' | 'unsupported'
@@ -18,10 +18,16 @@ const labels: Record<VoiceStatusProps['status'], string> = {
 export function VoiceStatus({ status, transcript, message }: VoiceStatusProps) {
   if (status === 'idle') return null
 
+  const variant = status === 'error' || status === 'unsupported'
+    ? 'danger'
+    : status === 'done'
+      ? 'success'
+      : 'default'
+
   return (
-    <div className={styles.status} role="status" aria-live="polite">
-      <p className={styles.label}>{message ?? labels[status]}</p>
-      {transcript && <p className={styles.transcript}>“{transcript}”</p>}
-    </div>
+    <Banner variant={variant}>
+      <BannerTitle>{message ?? labels[status]}</BannerTitle>
+      {transcript && <BannerDescription>“{transcript}”</BannerDescription>}
+    </Banner>
   )
 }

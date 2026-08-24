@@ -1,3 +1,4 @@
+import { Badge, Button, Card, CardDescription, CardTitle } from '@khamudom/lumen-ui-react'
 import styles from './ItemCard.module.css'
 
 interface ItemCardProps {
@@ -12,27 +13,29 @@ interface ItemCardProps {
 
 export function ItemCard({ name, description, image, tags = [], highlighted = false, onEdit, onDelete }: ItemCardProps) {
   return (
-    <article className={`${styles.card} ${highlighted ? styles.highlighted : ''}`}>
+    <Card className={`${styles.card} ${highlighted ? styles.highlighted : ''}`}>
       <div className={styles.lead}>
         {image ? <img src={image} alt="" className={styles.image} loading="lazy" /> : <div className={styles.placeholder} aria-hidden />}
       </div>
       <div className={styles.body}>
-        <h3 className={styles.name}>{name}</h3>
-        {description && <p className={styles.description}>{description}</p>}
+        <CardTitle as="h3">{name}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
         {tags.length > 0 && (
           <ul className={styles.tags} aria-label="Tags">
             {tags.map((tag) => (
-              <li key={tag} className={styles.tag}>{tag}</li>
+              <li key={tag}>
+                <Badge appearance="tint">{tag}</Badge>
+              </li>
             ))}
           </ul>
         )}
       </div>
       {(onEdit || onDelete) && (
         <div className={styles.actions}>
-          {onEdit && <button type="button" className={styles.action} onClick={onEdit}>Edit</button>}
-          {onDelete && <button type="button" className={styles.actionDanger} onClick={onDelete}>Delete</button>}
+          {onEdit && <Button variant="ghost" onClick={onEdit}>Edit</Button>}
+          {onDelete && <Button variant="ghost" onClick={onDelete}>Delete</Button>}
         </div>
       )}
-    </article>
+    </Card>
   )
 }

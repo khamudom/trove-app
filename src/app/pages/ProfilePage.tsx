@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { Button } from '@/components/Button'
-import { Dialog } from '@/components/Dialog'
+import {
+  Alert,
+  AlertDescription,
+  AlertDialog,
+  Avatar,
+  AvatarFallback,
+  Button,
+  Card,
+  CardContent,
+} from '@khamudom/lumen-ui-react'
 import { AuthModal, type AuthMode } from '@/features/auth/AuthModal'
 import { useAuth } from '@/features/auth/AuthContext'
 import styles from './ProfilePage.module.css'
@@ -9,7 +17,6 @@ export function ProfilePage() {
   const { isConfigured, isLoading, isSignedIn, userEmail, signOut } = useAuth()
   const [authMode, setAuthMode] = useState<AuthMode | null>(null)
   const [signOutOpen, setSignOutOpen] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
 
   if (isLoading) return <p className={styles.loading}>Loading…</p>
 
@@ -24,37 +31,43 @@ export function ProfilePage() {
         </p>
       </header>
 
-      <section className={styles.card}>
-        {isSignedIn ? (
-          <>
-            <div className={styles.identity}>
-              <span className={styles.avatar} aria-hidden>{initial}</span>
-              <div>
-                <p className={styles.email}>{userEmail}</p>
-                <p className={styles.meta}>Signed in · bins save to your account</p>
+      <Card className={styles.card}>
+        <CardContent className={styles.cardContent}>
+          {isSignedIn ? (
+            <>
+              <div className={styles.identity}>
+                <Avatar size="lg" aria-hidden>
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className={styles.email}>{userEmail}</p>
+                  <p className={styles.meta}>Signed in · bins save to your account</p>
+                </div>
               </div>
-            </div>
-            <Button variant="secondary" onClick={() => setSignOutOpen(true)}>Sign out</Button>
-          </>
-        ) : (
-          <>
-            <p className={styles.copy}>
-              Sign in or create an account to sync bins across devices and print QR labels.
-            </p>
-            {!isConfigured && (
-              <p className={styles.notice}>
-                Supabase is not configured yet. Local bins still work on this device.
+              <Button variant="secondary" onClick={() => setSignOutOpen(true)}>Sign out</Button>
+            </>
+          ) : (
+            <>
+              <p className={styles.copy}>
+                Sign in or create an account to sync bins across devices and print QR labels.
               </p>
-            )}
-            <div className={styles.actions}>
-              <Button disabled={!isConfigured} onClick={() => setAuthMode('sign-in')}>Sign in</Button>
-              <Button variant="secondary" disabled={!isConfigured} onClick={() => setAuthMode('sign-up')}>
-                Sign up
-              </Button>
-            </div>
-          </>
-        )}
-      </section>
+              {!isConfigured && (
+                <Alert>
+                  <AlertDescription>
+                    Supabase is not configured yet. Local bins still work on this device.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className={styles.actions}>
+                <Button disabled={!isConfigured} onClick={() => setAuthMode('sign-in')}>Sign in</Button>
+                <Button variant="secondary" disabled={!isConfigured} onClick={() => setAuthMode('sign-up')}>
+                  Sign up
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {authMode !== null && (
         <AuthModal
@@ -64,19 +77,15 @@ export function ProfilePage() {
         />
       )}
 
-      <Dialog
+      <AlertDialog
         open={signOutOpen}
+        role="alertdialog"
         title="Sign out?"
         description="You'll keep using Trove on this device with local bins. Account bins stay in the cloud until you sign back in."
-        confirmLabel={signingOut ? 'Signing out…' : 'Sign out'}
-        onCancel={() => setSignOutOpen(false)}
-        onConfirm={() => {
-          if (signingOut) return
-          setSigningOut(true)
-          void signOut().finally(() => {
-            setSigningOut(false)
-            setSignOutOpen(false)
-          })
+        actionLabel="Sign out"
+        onOpenChange={setSignOutOpen}
+        onAction={() => {
+          void signOut()
         }}
       />
     </div>

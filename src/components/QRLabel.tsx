@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import { Button } from '@khamudom/lumen-ui-react'
 import { getQrUrl } from '@/lib/utils'
-import { Button } from './Button'
 import printStyles from '@/styles/print.module.css'
 import styles from './QRLabel.module.css'
 

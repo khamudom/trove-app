@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/Button'
-import { Dialog } from '@/components/Dialog'
+import { AlertDialog, Badge, Button, Drawer, Toast } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ItemCard } from '@/components/ItemCard'
 import { QRLabel } from '@/components/QRLabel'
-import { Sheet } from '@/components/Sheet'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { BinForm } from '@/features/bins/BinForm'
 import { ItemForm } from '@/features/items/ItemForm'
@@ -65,7 +63,11 @@ export function BinDetailPage() {
           {bin.description && <p className={styles.description}>{bin.description}</p>}
           {bin.tags.length > 0 && (
             <ul className={styles.tags}>
-              {bin.tags.map((tag) => <li key={tag}>{tag}</li>)}
+              {bin.tags.map((tag) => (
+                <li key={tag}>
+                  <Badge appearance="tint">{tag}</Badge>
+                </li>
+              ))}
             </ul>
           )}
         </div>
@@ -105,17 +107,26 @@ export function BinDetailPage() {
       </section>
 
       {undoItemId && (
-        <div className={styles.undoBar} role="status">
-          Item added.
-          <button type="button" onClick={async () => {
-            await repo.deleteItem(undoItemId)
-            setUndoItemId(null)
-            await refresh()
-          }}>Undo</button>
+        <div className={styles.undoBar}>
+          <Toast
+            title="Item added."
+            action={(
+              <Button
+                variant="ghost"
+                onClick={async () => {
+                  await repo.deleteItem(undoItemId)
+                  setUndoItemId(null)
+                  await refresh()
+                }}
+              >
+                Undo
+              </Button>
+            )}
+          />
         </div>
       )}
 
-      <Sheet open={addItemOpen} title="Add item" onClose={() => setAddItemOpen(false)}>
+      <Drawer open={addItemOpen} heading="Add item" right onOpenChange={setAddItemOpen}>
         <ItemForm
           keepOpen
           submitLabel="Add item"
@@ -125,9 +136,16 @@ export function BinDetailPage() {
             await refresh()
           }}
         />
-      </Sheet>
+      </Drawer>
 
-      <Sheet open={Boolean(editingItem)} title="Edit item" onClose={() => setEditItemId(null)}>
+      <Drawer
+        open={Boolean(editingItem)}
+        heading="Edit item"
+        right
+        onOpenChange={(open) => {
+          if (!open) setEditItemId(null)
+        }}
+      >
         {editingItem && (
           <ItemForm
             initial={editingItem}
@@ -139,9 +157,9 @@ export function BinDetailPage() {
             }}
           />
         )}
-      </Sheet>
+      </Drawer>
 
-      <Sheet open={editBinOpen} title="Edit bin" onClose={() => setEditBinOpen(false)}>
+      <Drawer open={editBinOpen} heading="Edit bin" right onOpenChange={setEditBinOpen}>
         <BinForm
           initial={bin}
           submitLabel="Save bin"
@@ -151,11 +169,11 @@ export function BinDetailPage() {
             await refresh()
           }}
         />
-      </Sheet>
+      </Drawer>
 
-      <Sheet open={qrOpen} title="Print QR label" onClose={() => setQrOpen(false)}>
+      <Drawer open={qrOpen} heading="Print QR label" right onOpenChange={setQrOpen}>
         {bin.qrToken && <QRLabel binName={bin.name} qrToken={bin.qrToken} onClose={() => setQrOpen(false)} />}
-      </Sheet>
+      </Drawer>
 
       <AuthGateSheet
         open={authGateOpen}
@@ -167,30 +185,32 @@ export function BinDetailPage() {
         }}
       />
 
-      <Dialog
+      <AlertDialog
         open={deleteBinOpen}
+        role="alertdialog"
         title="Delete bin?"
         description="This removes the bin and everything inside it."
-        confirmLabel="Delete bin"
+        actionLabel="Delete bin"
         destructive
-        onCancel={() => setDeleteBinOpen(false)}
-        onConfirm={async () => {
-          await repo.deleteBin(bin.id)
-          navigate('/bins')
+        onOpenChange={setDeleteBinOpen}
+        onAction={() => {
+          void repo.deleteBin(bin.id).then(() => navigate('/bins'))
         }}
       />
 
-      <Dialog
+      <AlertDialog
         open={Boolean(deleteItemId)}
+        role="alertdialog"
         title="Delete item?"
         description="This item will be removed from the bin."
-        confirmLabel="Delete item"
+        actionLabel="Delete item"
         destructive
-        onCancel={() => setDeleteItemId(null)}
-        onConfirm={async () => {
-          if (deleteItemId) await repo.deleteItem(deleteItemId)
+        onOpenChange={(open) => {
+          if (!open) setDeleteItemId(null)
+        }}
+        onAction={() => {
+          if (deleteItemId) void repo.deleteItem(deleteItemId).then(() => refresh())
           setDeleteItemId(null)
-          await refresh()
         }}
       />
     </div>

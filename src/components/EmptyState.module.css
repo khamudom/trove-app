@@ -7,13 +7,8 @@
   padding: var(--space-10) var(--space-6);
 }
 
-.title {
-  font-size: var(--text-xl);
-}
-
 .description {
   max-width: 24rem;
-  color: var(--color-ink-muted);
 }
 
 .action {

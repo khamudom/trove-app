@@ -1,3 +1,4 @@
+import { Button } from '@khamudom/lumen-ui-react'
 import { Icons } from './Icons'
 import styles from './SearchField.module.css'
 
@@ -29,7 +30,7 @@ export function SearchField({
         onSubmit?.()
       }}
     >
-      <Icons.Search className={styles.searchIcon} aria-hidden />
+      <Icons.Search className={styles.searchIcon} />
       <input
         id={id}
         className={styles.input}
@@ -41,9 +42,13 @@ export function SearchField({
         onChange={(event) => onChange(event.target.value)}
       />
       {onVoiceClick && (
-        <button type="button" className={styles.voiceButton} aria-label="Search with voice" onClick={onVoiceClick}>
-          <Icons.Mic aria-hidden />
-        </button>
+        <Button
+          variant="ghost"
+          className={styles.voiceButton}
+          aria-label="Search with voice"
+          onClick={onVoiceClick}
+          icon={<Icons.Mic />}
+        />
       )}
     </form>
   )

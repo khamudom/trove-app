@@ -1,8 +1,7 @@
 import { useState } from 'react'
+import { Button, Input, Textarea } from '@khamudom/lumen-ui-react'
 import { joinTags, parseTagsInput } from '@/lib/utils'
 import type { Item } from '@/types'
-import { Button } from '@/components/Button'
-import { TagInput } from '@/components/TagInput'
 import styles from './ItemForm.module.css'
 
 interface ItemFormProps {
@@ -45,16 +44,28 @@ export function ItemForm({ initial, submitLabel, keepOpen = false, onSubmit }: I
         void handleSubmit()
       }}
     >
-      <label className={styles.field}>
-        <span>Name</span>
-        <input required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      <label className={styles.field}>
-        <span>Description</span>
-        <textarea value={description} rows={2} onChange={(e) => setDescription(e.target.value)} />
-      </label>
-      <TagInput id="item-tags" label="Tags" value={tags} onChange={setTags} />
-      <Button type="submit" fullWidth disabled={loading || !name.trim()}>{submitLabel}</Button>
+      <Input
+        label="Name"
+        required
+        autoFocus
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+      <Textarea
+        label="Description"
+        value={description}
+        rows={2}
+        onChange={(event) => setDescription(event.target.value)}
+      />
+      <Input
+        id="item-tags"
+        label="Tags"
+        value={tags}
+        placeholder="tool, seasonal"
+        helperText="Separate tags with commas"
+        onChange={(event) => setTags(event.target.value)}
+      />
+      <Button type="submit" fullWidth loading={loading} disabled={!name.trim()}>{submitLabel}</Button>
     </form>
   )
 }

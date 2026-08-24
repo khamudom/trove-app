@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button, Drawer } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
-import { Button } from '@/components/Button'
 import { Icons } from '@/components/Icons'
 import { SearchField } from '@/components/SearchField'
-import { Sheet } from '@/components/Sheet'
 import { VoiceStatus } from '@/components/VoiceStatus'
 import { BinForm } from '@/features/bins/BinForm'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -54,8 +53,7 @@ export function HomePage() {
       <VoiceStatus status={voice.status} transcript={voice.transcript} message={voice.result?.message} />
 
       <div className={styles.actions}>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Icons.Plus aria-hidden />
+        <Button icon={<Icons.Plus />} onClick={() => setCreateOpen(true)}>
           Add bin
         </Button>
         <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
@@ -80,7 +78,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <Sheet open={createOpen} title="Create bin" onClose={() => setCreateOpen(false)}>
+      <Drawer open={createOpen} heading="Create bin" right onOpenChange={setCreateOpen}>
         <BinForm
           submitLabel="Create bin"
           onSubmit={async (values) => {
@@ -90,7 +88,7 @@ export function HomePage() {
             navigate(`/bins/${bin.id}`)
           }}
         />
-      </Sheet>
+      </Drawer>
     </div>
   )
 }

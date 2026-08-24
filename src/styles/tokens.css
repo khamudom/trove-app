@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-lumen-theme='light'] {
   --color-paper: #f7f3ec;
   --color-paper-elevated: #fffdf9;
   --color-ink: #1f1c18;
@@ -53,6 +54,26 @@
   --sidebar-width: 15rem;
   --content-max: 72rem;
   --touch-min: 2.75rem;
+
+  --lumen-color-primary: var(--color-accent);
+  --lumen-color-secondary: var(--color-accent-soft);
+  --lumen-color-surface: var(--color-paper-elevated);
+  --lumen-color-background: var(--color-paper);
+  --lumen-color-border: var(--color-border-strong);
+  --lumen-color-text: var(--color-ink);
+  --lumen-color-text-secondary: var(--color-ink-muted);
+  --lumen-color-muted: var(--color-accent-soft);
+  --lumen-color-danger: var(--color-danger);
+  --lumen-color-ring: var(--color-focus);
+  --lumen-color-on-primary: #fff;
+  --lumen-color-overlay: var(--color-overlay);
+  --lumen-font-family: var(--font-ui);
+  --lumen-button-radius: var(--radius-full);
+  --lumen-button-min-height: var(--touch-min);
+  --lumen-input-min-height: var(--touch-min);
+  --lumen-card-bg: var(--color-paper-elevated);
+  --lumen-card-border: var(--color-border);
+  --lumen-card-radius: var(--radius-lg);
 }
 
 @media (prefers-reduced-motion: reduce) {

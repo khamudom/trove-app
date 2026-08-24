@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Button } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ItemCard } from '@/components/ItemCard'
-import { Button } from '@/components/Button'
 import { createPublicBinReader } from '@/repositories'
 import { useAuth } from '@/features/auth/AuthContext'
 import type { PublicBin } from '@/types'
@@ -10,6 +10,7 @@ import styles from './PublicBinPage.module.css'
 
 export function PublicBinPage() {
   const { qrToken = '' } = useParams()
+  const navigate = useNavigate()
   const { isSignedIn, repo } = useAuth()
   const [bin, setBin] = useState<PublicBin | null>(null)
   const [ownerBinId, setOwnerBinId] = useState<string | null>(null)
@@ -47,7 +48,7 @@ export function PublicBinPage() {
       <EmptyState
         title="This label isn't available"
         description="The QR code may be invalid or the bin may have been removed."
-        action={<Link to="/"><Button>Browse Trove</Button></Link>}
+        action={<Button onClick={() => navigate('/')}>Browse Trove</Button>}
       />
     )
   }

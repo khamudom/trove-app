@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button, Card, CardTitle, CardDescription, Drawer } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { SearchField } from '@/components/SearchField'
-import { Sheet } from '@/components/Sheet'
 import { VoiceStatus } from '@/components/VoiceStatus'
-import { Button } from '@/components/Button'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useVoiceCommand } from '@/features/voice/useVoiceCommand'
 import type { SearchResult } from '@/types'
@@ -89,22 +88,37 @@ export function SearchPage() {
         <ul className={styles.results}>
           {results.map((result) => (
             <li key={`${result.type}-${result.itemId ?? result.binId}`}>
-              <button
-                type="button"
+              <Card
+                interactive
+                role="link"
+                tabIndex={0}
                 className={styles.result}
                 onClick={() => navigate(`/bins/${result.binId}${result.itemId ? `?item=${result.itemId}` : ''}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    navigate(`/bins/${result.binId}${result.itemId ? `?item=${result.itemId}` : ''}`)
+                  }
+                }}
               >
-                <span className={styles.resultTitle}>{result.title}</span>
-                <span className={styles.resultSubtitle}>{result.subtitle}</span>
-                {result.location && <span className={styles.resultLocation}>{result.location}</span>}
-              </button>
+                <CardTitle as="h3">{result.title}</CardTitle>
+                <CardDescription>{result.subtitle}</CardDescription>
+                {result.location && <CardDescription>{result.location}</CardDescription>}
+              </Card>
             </li>
           ))}
         </ul>
       )}
 
       {voice.result?.kind === 'added_item' && voice.result.binId && (
-        <Sheet open title="Added" onClose={voice.reset}>
+        <Drawer
+          open
+          heading="Added"
+          right
+          onOpenChange={(open) => {
+            if (!open) voice.reset()
+          }}
+        >
           <p>{voice.result.message}</p>
           <div className={styles.sheetActions}>
             <Button onClick={() => navigate(`/bins/${voice.result?.binId}`)}>View bin</Button>
@@ -118,7 +132,7 @@ export function SearchPage() {
               Undo
             </Button>
           </div>
-        </Sheet>
+        </Drawer>
       )}
     </div>
   )

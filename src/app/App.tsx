@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ThemeProvider } from '@khamudom/lumen-ui-react'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AppShell } from './AppShell'
 
@@ -17,23 +18,25 @@ function Loading() {
 
 export function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path="/b/:qrToken" element={<PublicBinPage />} />
-            <Route element={<AppShell />}>
-              <Route index element={<HomePage />} />
-              <Route path="bins" element={<BinsPage />} />
-              <Route path="bins/:binId" element={<BinDetailPage />} />
-              <Route path="search" element={<SearchPage />} />
-              <Route path="scan" element={<ScanPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider defaultTheme="light" style={{ minHeight: '100%' }}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path="/b/:qrToken" element={<PublicBinPage />} />
+              <Route element={<AppShell />}>
+                <Route index element={<HomePage />} />
+                <Route path="bins" element={<BinsPage />} />
+                <Route path="bins/:binId" element={<BinDetailPage />} />
+                <Route path="search" element={<SearchPage />} />
+                <Route path="scan" element={<ScanPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

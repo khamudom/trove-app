@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button, Drawer } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
-import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { Icons } from '@/components/Icons'
-import { Sheet } from '@/components/Sheet'
 import { BinForm } from '@/features/bins/BinForm'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useBins } from '@/hooks/useBins'
@@ -30,8 +29,7 @@ export function BinsPage() {
           <h1>Bins</h1>
           <p className={styles.subtitle}>Your physical storage, organized.</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Icons.Plus aria-hidden />
+        <Button icon={<Icons.Plus />} onClick={() => setCreateOpen(true)}>
           Add bin
         </Button>
       </header>
@@ -58,7 +56,7 @@ export function BinsPage() {
         </div>
       )}
 
-      <Sheet open={createOpen} title="Create bin" onClose={() => setCreateOpen(false)}>
+      <Drawer open={createOpen} heading="Create bin" right onOpenChange={setCreateOpen}>
         <BinForm
           submitLabel="Create bin"
           onSubmit={async (values) => {
@@ -68,7 +66,7 @@ export function BinsPage() {
             navigate(`/bins/${bin.id}`)
           }}
         />
-      </Sheet>
+      </Drawer>
     </div>
   )
 }

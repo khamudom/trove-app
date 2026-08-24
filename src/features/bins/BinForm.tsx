@@ -1,8 +1,7 @@
 import { useState } from 'react'
+import { Button, Input, Textarea } from '@khamudom/lumen-ui-react'
 import { joinTags, parseTagsInput } from '@/lib/utils'
 import type { Bin } from '@/types'
-import { Button } from '@/components/Button'
-import { TagInput } from '@/components/TagInput'
 import styles from './BinForm.module.css'
 
 interface BinFormProps {
@@ -40,24 +39,37 @@ export function BinForm({ initial, submitLabel, onSubmit }: BinFormProps) {
         }).finally(() => setLoading(false))
       }}
     >
-      <label className={styles.field}>
-        <span>Name</span>
-        <input required value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      <label className={styles.field}>
-        <span>Description</span>
-        <textarea value={description} rows={3} onChange={(e) => setDescription(e.target.value)} />
-      </label>
-      <label className={styles.field}>
-        <span>Category</span>
-        <input value={category} onChange={(e) => setCategory(e.target.value)} />
-      </label>
-      <label className={styles.field}>
-        <span>Location</span>
-        <input value={location} onChange={(e) => setLocation(e.target.value)} />
-      </label>
-      <TagInput id="bin-tags" label="Tags" value={tags} onChange={setTags} />
-      <Button type="submit" fullWidth disabled={loading || !name.trim()}>{submitLabel}</Button>
+      <Input
+        label="Name"
+        required
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+      <Textarea
+        label="Description"
+        value={description}
+        rows={3}
+        onChange={(event) => setDescription(event.target.value)}
+      />
+      <Input
+        label="Category"
+        value={category}
+        onChange={(event) => setCategory(event.target.value)}
+      />
+      <Input
+        label="Location"
+        value={location}
+        onChange={(event) => setLocation(event.target.value)}
+      />
+      <Input
+        id="bin-tags"
+        label="Tags"
+        value={tags}
+        placeholder="tool, seasonal"
+        helperText="Separate tags with commas"
+        onChange={(event) => setTags(event.target.value)}
+      />
+      <Button type="submit" fullWidth loading={loading} disabled={!name.trim()}>{submitLabel}</Button>
     </form>
   )
 }

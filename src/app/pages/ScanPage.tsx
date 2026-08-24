@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/Button'
+import { Button } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './ScanPage.module.css'
 

@@ -32,8 +32,8 @@ describe('AuthModal', () => {
 
     render(<AuthModal open initialMode="sign-in" onClose={onClose} onSuccess={onSuccess} />)
 
-    await user.type(screen.getByLabelText('Email'), 'you@example.com')
-    await user.type(screen.getByLabelText('Password'), 'secret1')
+    await user.type(screen.getByLabelText(/email/i), 'you@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'secret1')
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(mocks.signIn).toHaveBeenCalledWith('you@example.com', 'secret1')
@@ -48,8 +48,8 @@ describe('AuthModal', () => {
 
     render(<AuthModal open initialMode="sign-up" onClose={() => {}} onSuccess={onSuccess} />)
 
-    await user.type(screen.getByLabelText('Email'), 'you@example.com')
-    await user.type(screen.getByLabelText('Password'), 'secret1')
+    await user.type(screen.getByLabelText(/email/i), 'you@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'secret1')
     await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     expect(await screen.findByText(/We sent a confirmation link/)).toBeInTheDocument()
