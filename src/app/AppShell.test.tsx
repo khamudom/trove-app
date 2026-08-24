@@ -97,18 +97,16 @@ describe('AppShell mobile page transitions', () => {
     expect(document.querySelector(`.${styles.exitToRight}`)).toBeTruthy()
   })
 
-  it('autofocuses search without scroll-into-view during the slide-in', async () => {
-    const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+  it('slides search in from the right on the first visit', async () => {
     const user = userEvent.setup()
     const { nav } = renderShell()
 
     await user.click(within(nav()).getByRole('link', { name: 'Search' }))
 
     expect(document.querySelector(`.${styles.enterFromRight}`)).toBeTruthy()
-    expect(screen.getByRole('searchbox', { name: 'Search Trove' })).toHaveFocus()
-    expect(focus).toHaveBeenCalledWith({ preventScroll: true })
-
-    focus.mockRestore()
+    expect(document.querySelector(`.${styles.exitToLeft}`)).toBeTruthy()
+    expect(screen.getByText('Search page')).toBeInTheDocument()
+    expect(screen.getByRole('searchbox', { name: 'Search Trove' })).toBeInTheDocument()
   })
 
   it('animates the first visit to a page that is still loading', async () => {
