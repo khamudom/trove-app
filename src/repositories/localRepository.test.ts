@@ -28,10 +28,18 @@ describe('LocalRepository', () => {
 
   it('searches items and navigates by bin id', async () => {
     const repo = new LocalRepository()
+    const bin = await repo.createBin({ name: 'Toolbox' })
+    await repo.createItem({ binId: bin.id, name: 'Hammer' })
     const results = await repo.search('hammer')
     expect(results.some((result) => result.title === 'Hammer')).toBe(true)
     const match = results.find((result) => result.title === 'Hammer')
-    expect(match?.binId).toBeTruthy()
+    expect(match?.binId).toBe(bin.id)
+  })
+
+  it('starts with no bins or items', async () => {
+    const repo = new LocalRepository()
+    expect(await repo.listBins()).toEqual([])
+    expect(await repo.search('hammer')).toEqual([])
   })
 
   it('does not expose qr tokens for local bins', async () => {

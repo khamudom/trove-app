@@ -24,25 +24,6 @@ export function formatRelativeDate(iso: string): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-export function generatePlaceholderImage(label: string, hue = 145): string {
-  const initials = label
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="hsl(${hue}, 28%, 88%)"/>
-        <stop offset="100%" stop-color="hsl(${hue}, 22%, 78%)"/>
-      </linearGradient>
-    </defs>
-    <rect width="400" height="400" fill="url(#g)"/>
-    <text x="200" y="220" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="72" fill="hsl(${hue}, 24%, 28%)">${initials}</text>
-  </svg>`
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
-}
-
 export function getAppOrigin(): string {
   if (typeof window !== 'undefined') return window.location.origin
   return 'https://trove.app'
