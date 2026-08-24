@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Drawer } from '@khamudom/lumen-ui-react'
+import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Icons } from '@/components/Icons'
@@ -56,7 +56,7 @@ export function BinsPage() {
         </div>
       )}
 
-      <Drawer open={createOpen} heading="Create bin" right onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen} heading="Create bin" onOpenChange={setCreateOpen}>
         <BinForm
           submitLabel="Create bin"
           onSubmit={async (values) => {
@@ -66,7 +66,7 @@ export function BinsPage() {
             navigate(`/bins/${bin.id}`)
           }}
         />
-      </Drawer>
+      </Dialog>
     </div>
   )
 }
