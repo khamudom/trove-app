@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLocalRepository } from '@/repositories'
+import { clearLocalStore } from '@/repositories/localRepository'
 import { AppShell } from '../AppShell'
 import { SearchPage } from './SearchPage'
 
@@ -39,6 +40,16 @@ function mockMatchMedia(matches: boolean) {
   })
 }
 
+async function seedSearchFixtures() {
+  clearLocalStore()
+  localStorage.clear()
+  const repo = createLocalRepository()
+  const bin = await repo.createBin({ name: 'Toolbox', category: 'Tools', tags: ['tools'] })
+  await repo.createItem({ binId: bin.id, name: 'Hammer', tags: ['tool', 'hand tool'] })
+  await repo.createItem({ binId: bin.id, name: 'Cordless drill', tags: ['tool', 'power tool'] })
+  return repo
+}
+
 function renderSearchPage(initialEntry = '/search') {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
@@ -56,9 +67,9 @@ function renderSearchPage(initialEntry = '/search') {
 }
 
 describe('SearchPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockMatchMedia(true)
-    const repo = createLocalRepository()
+    const repo = await seedSearchFixtures()
     mocks.search.mockReset()
     mocks.search.mockImplementation((query: string) => repo.search(query))
   })
