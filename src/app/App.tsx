@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@khamudom/lumen-ui-react'
+import { PwaUpdateToast } from '@/components/PwaUpdateToast'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AppShell } from './AppShell'
 import { BinsPage } from './pages/BinsPage'
@@ -35,6 +36,7 @@ export function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          <PwaUpdateToast />
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
