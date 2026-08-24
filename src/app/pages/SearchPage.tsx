@@ -21,7 +21,10 @@ export function SearchPage() {
 
   const runSearch = async (value: string) => {
     const trimmed = value.trim()
-    setParams(trimmed ? { q: trimmed } : {})
+    const current = (params.get('q') ?? '').trim()
+    if (trimmed !== current) {
+      setParams(trimmed ? { q: trimmed } : {}, { replace: true })
+    }
     const next = trimmed ? await repo.search(trimmed) : []
     setResults(next)
     setSearched(Boolean(trimmed))
