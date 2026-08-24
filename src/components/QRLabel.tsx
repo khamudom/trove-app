@@ -50,8 +50,14 @@ export function QRLabel({ binName, qrToken, onClose }: QRLabelProps) {
         <p className={printStyles.cta}>Scan to see what's inside</p>
       </div>
       <div className={printStyles.actions}>
-        <Button onClick={handlePrint}>Print label</Button>
-        {onClose && <Button variant="secondary" onClick={onClose}>Done</Button>}
+        <Button disabled={!dataUrl} onClick={handlePrint}>
+          Print label
+        </Button>
+        {onClose && (
+          <Button variant="secondary" onClick={onClose}>
+            Done
+          </Button>
+        )}
       </div>
     </div>
   )
