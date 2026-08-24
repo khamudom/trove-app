@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@khamudom/lumen-ui-react'
 import { PwaUpdateToast } from '@/components/PwaUpdateToast'
 import { AuthProvider } from '@/features/auth/AuthContext'
+import { useOverlayBodyScrollLock } from '@/hooks/useOverlayBodyScrollLock'
 import { AppShell } from './AppShell'
 import { BinsPage } from './pages/BinsPage'
 import { HomePage } from './pages/HomePage'
@@ -17,25 +18,33 @@ function Loading() {
   return <p style={{ padding: '2rem', color: 'var(--color-ink-muted)' }}>Loading…</p>
 }
 
+function AppRoutes() {
+  useOverlayBodyScrollLock()
+
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/b/:qrToken" element={<PublicBinPage />} />
+        <Route element={<AppShell />}>
+          <Route index element={<HomePage />} />
+          <Route path="bins" element={<BinsPage />} />
+          <Route path="bins/:binId" element={<BinDetailPage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="scan" element={<ScanPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  )
+}
+
 export function App() {
   return (
     <ThemeProvider defaultTheme="light" style={{ minHeight: '100%' }}>
       <AuthProvider>
         <BrowserRouter>
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              <Route path="/b/:qrToken" element={<PublicBinPage />} />
-              <Route element={<AppShell />}>
-                <Route index element={<HomePage />} />
-                <Route path="bins" element={<BinsPage />} />
-                <Route path="bins/:binId" element={<BinDetailPage />} />
-                <Route path="search" element={<SearchPage />} />
-                <Route path="scan" element={<ScanPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
+          <AppRoutes />
           <PwaUpdateToast />
         </BrowserRouter>
       </AuthProvider>

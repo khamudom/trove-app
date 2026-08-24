@@ -18,6 +18,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Keep the page behind Lumen overlays from scrolling (JS lock also applies). */
+html:has(.lumen-dialog__portal),
+html:has(.lumen-drawer__portal),
+html:has(.lumen-alert-dialog__portal),
+body:has(.lumen-dialog__portal),
+body:has(.lumen-drawer__portal),
+body:has(.lumen-alert-dialog__portal) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   font-family: var(--font-ui);
