@@ -64,4 +64,15 @@ describe('AuthModal', () => {
     await user.click(screen.getByRole('button', { name: 'Need an account? Sign up' }))
     expect(screen.getByRole('heading', { name: 'Create an account' })).toBeInTheDocument()
   })
+
+  it('explains unavailable accounts without naming infrastructure', () => {
+    mocks.isConfigured = false
+    render(<AuthModal open initialMode="sign-up" onClose={() => {}} />)
+
+    expect(
+      screen.getByText(/Accounts aren't available right now/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Supabase/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeDisabled()
+  })
 })
