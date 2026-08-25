@@ -21,10 +21,6 @@
   right: var(--space-4);
   bottom: calc(var(--nav-height) + var(--space-4));
   z-index: 25;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-2);
 }
 
 .mic {
@@ -59,20 +55,6 @@
   width: 1.5rem;
   height: 1.5rem;
   display: block;
-}
-
-.hint {
-  margin: 0;
-  max-width: 11rem;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: rgba(255, 253, 249, 0.94);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  color: var(--color-ink-muted);
-  font-size: var(--text-xs);
-  line-height: 1.35;
-  text-align: right;
 }
 
 @media (min-width: 960px) {
