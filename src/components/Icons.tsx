@@ -81,3 +81,11 @@ Icons.Close = function CloseIcon({ className }: { className?: string }) {
     </svg>
   )
 }
+
+Icons.Back = function BackIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M15 5 8 12l7 7" />
+    </svg>
+  )
+}

@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, type ReactElement } from 'react'
-import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router-dom'
+import { Link, MemoryRouter, Route, Routes, useSearchParams } from 'react-router-dom'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -30,7 +30,12 @@ function mockMatchMedia(matches: boolean) {
 
 function renderShell(
   lazyBins = false,
-  options?: { initialEntry?: string; searchPage?: () => ReactElement },
+  options?: {
+    initialEntry?: string
+    searchPage?: () => ReactElement
+    binsPage?: () => ReactElement
+    binDetailPage?: () => ReactElement
+  },
 ) {
   let resolveBins: ((value: { default: () => ReactElement }) => void) | undefined
   const BinsPage = lazyBins
@@ -40,8 +45,9 @@ function renderShell(
             resolveBins = resolve
           }),
       )
-    : () => <div>Bins page</div>
+    : (options?.binsPage ?? (() => <div>Bins page</div>))
   const SearchPage = options?.searchPage ?? (() => <div>Search page</div>)
+  const BinDetailPage = options?.binDetailPage ?? (() => <div>Bin detail page</div>)
 
   const view = render(
     <MemoryRouter initialEntries={[options?.initialEntry ?? '/']}>
@@ -50,6 +56,7 @@ function renderShell(
           <Route element={<AppShell />}>
             <Route index element={<div>Home page</div>} />
             <Route path="bins" element={<BinsPage />} />
+            <Route path="bins/:binId" element={<BinDetailPage />} />
             <Route path="scan" element={<div>Scan page</div>} />
             <Route path="search" element={<SearchPage />} />
             <Route path="profile" element={<div>Profile page</div>} />
@@ -173,5 +180,46 @@ describe('AppShell mobile page transitions', () => {
     expect(screen.getByText('Search page')).toBeInTheDocument()
     expect(document.querySelector(`.${styles.enterFromRight}`)).toBeNull()
     expect(mounts).toBe(1)
+  })
+
+  it('slides bin detail in from the right when opening from all bins', async () => {
+    const user = userEvent.setup()
+    renderShell(false, {
+      initialEntry: '/bins',
+      binsPage: () => (
+        <div>
+          Bins page
+          <Link to="/bins/bin-1">Open bin</Link>
+        </div>
+      ),
+    })
+
+    await user.click(screen.getByRole('link', { name: 'Open bin' }))
+
+    expect(document.querySelector(`.${styles.enterFromRight}`)).toBeTruthy()
+    expect(document.querySelector(`.${styles.exitToLeft}`)).toBeTruthy()
+    expect(screen.getByText('Bin detail page')).toBeInTheDocument()
+    expect(screen.getByText('Bins page')).toBeInTheDocument()
+  })
+
+  it('slides all bins in from the left when leaving bin detail', async () => {
+    const user = userEvent.setup()
+    renderShell(false, {
+      initialEntry: '/bins/bin-1',
+      binsPage: () => <div>Bins page</div>,
+      binDetailPage: () => (
+        <div>
+          Bin detail page
+          <Link to="/bins">Back to bins</Link>
+        </div>
+      ),
+    })
+
+    await user.click(screen.getByRole('link', { name: 'Back to bins' }))
+
+    expect(document.querySelector(`.${styles.enterFromLeft}`)).toBeTruthy()
+    expect(document.querySelector(`.${styles.exitToRight}`)).toBeTruthy()
+    expect(screen.getByText('Bins page')).toBeInTheDocument()
+    expect(screen.getByText('Bin detail page')).toBeInTheDocument()
   })
 })
