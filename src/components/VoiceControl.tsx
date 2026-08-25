@@ -74,9 +74,6 @@ export function VoiceControl() {
         >
           <Icons.Mic className={styles.micIcon} />
         </button>
-        <p className={styles.hint}>
-          {listening ? 'Listening…' : 'Add items, find things, or open a bin'}
-        </p>
       </div>
     </div>
   )

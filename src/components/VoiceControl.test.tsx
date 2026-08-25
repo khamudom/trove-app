@@ -49,7 +49,7 @@ describe('VoiceControl', () => {
     mocks.deleteItem.mockReset()
   })
 
-  it('shows a global mic with add-or-find hint', () => {
+  it('shows a global mic', () => {
     render(
       <MemoryRouter>
         <VoiceControl />
@@ -57,7 +57,7 @@ describe('VoiceControl', () => {
     )
 
     expect(screen.getByRole('button', { name: 'Add or find with voice' })).toBeInTheDocument()
-    expect(screen.getByText('Add items, find things, or open a bin')).toBeInTheDocument()
+    expect(screen.queryByText('Add items, find things, or open a bin')).not.toBeInTheDocument()
   })
 
   it('shows an item-added toast after a unique voice add', () => {
