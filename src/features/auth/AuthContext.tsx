@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     const client = getSupabaseClient()
-    if (!client) throw new Error('Supabase is not configured')
+    if (!client) throw new Error("Accounts aren't available right now")
     const { data, error } = await client.auth.signUp({ email, password })
     if (error) throw error
     if (!data.session) return { needsConfirmation: true }
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const client = getSupabaseClient()
-    if (!client) throw new Error('Supabase is not configured')
+    if (!client) throw new Error("Accounts aren't available right now")
     const { error } = await client.auth.signInWithPassword({ email, password })
     if (error) throw error
     setIsSignedIn(true)

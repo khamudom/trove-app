@@ -54,7 +54,7 @@ export function ProfilePage() {
               {!isConfigured && (
                 <Alert>
                   <AlertDescription>
-                    Supabase is not configured yet. Guest bins stay in this session only and are not saved.
+                    Guest bins stay in this session only and aren't saved across devices.
                   </AlertDescription>
                 </Alert>
               )}
