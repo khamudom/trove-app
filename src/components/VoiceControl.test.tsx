@@ -60,7 +60,7 @@ describe('VoiceControl', () => {
     expect(screen.getByText('Add items, find things, or open a bin')).toBeInTheDocument()
   })
 
-  it('shows the added drawer after a unique voice add', () => {
+  it('shows an item-added toast after a unique voice add', () => {
     mocks.voice.status = 'done'
     mocks.voice.result = {
       kind: 'added_item',
@@ -77,10 +77,11 @@ describe('VoiceControl', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: 'Added' })).toBeInTheDocument()
-    expect(screen.getAllByText('Added hammer to Toolbox').length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: 'View bin' })).toBeInTheDocument()
+    expect(screen.getByText('Item added.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Added' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'View bin' })).not.toBeInTheDocument()
+    expect(document.querySelector('.lumen-drawer__portal')).toBeNull()
   })
 
   describe('status banner auto-dismiss', () => {
@@ -129,6 +130,31 @@ describe('VoiceControl', () => {
       expect(mocks.voice.reset).not.toHaveBeenCalled()
 
       await vi.advanceTimersByTimeAsync(3000)
+
+      expect(mocks.voice.reset).toHaveBeenCalled()
+    })
+
+    it('dismisses the item-added toast after a few seconds', async () => {
+      mocks.voice.status = 'done'
+      mocks.voice.result = {
+        kind: 'added_item',
+        binId: 'bin-1',
+        itemId: 'item-1',
+        itemName: 'hammer',
+        binName: 'Toolbox',
+        message: 'Added hammer to Toolbox',
+      }
+
+      render(
+        <MemoryRouter>
+          <VoiceControl />
+        </MemoryRouter>,
+      )
+
+      expect(screen.getByText('Item added.')).toBeInTheDocument()
+      expect(mocks.voice.reset).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(4000)
 
       expect(mocks.voice.reset).toHaveBeenCalled()
     })
