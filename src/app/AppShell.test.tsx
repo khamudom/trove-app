@@ -7,6 +7,10 @@ import { SearchField } from '@/components/SearchField'
 import { AppShell } from './AppShell'
 import styles from './AppShell.module.css'
 
+vi.mock('@/components/VoiceControl', () => ({
+  VoiceControl: () => null,
+}))
+
 function mockMatchMedia(matches: boolean) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

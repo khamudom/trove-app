@@ -7,6 +7,10 @@ import { clearLocalStore } from '@/repositories/localRepository'
 import { AppShell } from '../AppShell'
 import { SearchPage } from './SearchPage'
 
+vi.mock('@/components/VoiceControl', () => ({
+  VoiceControl: () => null,
+}))
+
 const mocks = vi.hoisted(() => ({
   search: vi.fn(),
 }))

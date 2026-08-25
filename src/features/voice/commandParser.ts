@@ -4,13 +4,21 @@ function clean(text: string): string {
   return text.trim().replace(/\.$/, '').replace(/\?/g, '')
 }
 
+function stripLeadingArticle(value: string): string {
+  return value.replace(/^(?:a|an|the|my)\s+/i, '').trim()
+}
+
 export function parseVoiceCommand(raw: string): ParsedVoiceCommand {
   const text = clean(raw.toLowerCase())
 
-  const addMatch = text.match(/^add (.+?) to (?:the )?(.+)$/)
+  const addMatch = text.match(/^(?:add|put) (.+?) (?:to|in) (?:the )?(.+)$/)
   if (addMatch) {
     return {
-      command: { intent: 'add_item', itemName: addMatch[1].trim(), binName: addMatch[2].trim() },
+      command: {
+        intent: 'add_item',
+        itemName: stripLeadingArticle(addMatch[1].trim()),
+        binName: stripLeadingArticle(addMatch[2].trim()),
+      },
       confidence: 'high',
     }
   }
@@ -26,7 +34,7 @@ export function parseVoiceCommand(raw: string): ParsedVoiceCommand {
   const listMatch = text.match(/^(?:what is in|what's in|show me what's in|list) (?:the )?(.+?)(?: bin)?$/)
   if (listMatch) {
     return {
-      command: { intent: 'list_bin_contents', binName: listMatch[1].trim() },
+      command: { intent: 'list_bin_contents', binName: stripLeadingArticle(listMatch[1].trim()) },
       confidence: 'high',
     }
   }
@@ -34,7 +42,7 @@ export function parseVoiceCommand(raw: string): ParsedVoiceCommand {
   const showMatch = text.match(/^(?:show me|open) (?:the )?(.+?)(?: bin)?$/)
   if (showMatch) {
     return {
-      command: { intent: 'show_bin', binName: showMatch[1].trim() },
+      command: { intent: 'show_bin', binName: stripLeadingArticle(showMatch[1].trim()) },
       confidence: 'high',
     }
   }

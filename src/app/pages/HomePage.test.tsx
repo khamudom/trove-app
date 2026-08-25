@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   }>,
   listItems: vi.fn(),
   createBin: vi.fn(),
+  deleteItem: vi.fn(),
   refresh: vi.fn(),
 }))
 
@@ -26,6 +27,7 @@ vi.mock('@/features/auth/AuthContext', () => ({
     repo: {
       listItems: mocks.listItems,
       createBin: mocks.createBin,
+      deleteItem: mocks.deleteItem,
     },
   }),
 }))
@@ -42,21 +44,13 @@ vi.mock('@/repositories/localRepository', () => ({
   getRecentBinIds: () => [],
 }))
 
-vi.mock('@/features/voice/useVoiceCommand', () => ({
-  useVoiceCommand: () => ({
-    status: 'idle',
-    transcript: '',
-    result: null,
-    listen: vi.fn(),
-  }),
-}))
-
 describe('HomePage', () => {
   beforeEach(() => {
     mocks.bins = []
     mocks.listItems.mockReset()
     mocks.listItems.mockResolvedValue([])
     mocks.createBin.mockReset()
+    mocks.deleteItem.mockReset()
     mocks.refresh.mockReset()
   })
 

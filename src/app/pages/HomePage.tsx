@@ -4,10 +4,9 @@ import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { Icons } from '@/components/Icons'
 import { SearchField } from '@/components/SearchField'
-import { VoiceStatus } from '@/components/VoiceStatus'
 import { BinForm } from '@/features/bins/BinForm'
 import { useAuth } from '@/features/auth/AuthContext'
-import { useVoiceCommand } from '@/features/voice/useVoiceCommand'
+import { onInventoryChanged } from '@/lib/inventoryEvents'
 import { getRecentBinIds } from '@/repositories/localRepository'
 import { useBins } from '@/hooks/useBins'
 import styles from './HomePage.module.css'
@@ -18,7 +17,6 @@ export function HomePage() {
   const { bins, refresh } = useBins()
   const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
-  const voice = useVoiceCommand(repo)
 
   const recentBins = useMemo(() => {
     const recentIds = getRecentBinIds()
@@ -30,9 +28,20 @@ export function HomePage() {
   const [counts, setCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    void Promise.all(bins.map(async (bin) => [bin.id, (await repo.listItems(bin.id)).length] as const)).then((entries) => {
-      setCounts(Object.fromEntries(entries))
+    let cancelled = false
+    const loadCounts = () => {
+      void Promise.all(bins.map(async (bin) => [bin.id, (await repo.listItems(bin.id)).length] as const)).then((entries) => {
+        if (!cancelled) setCounts(Object.fromEntries(entries))
+      })
+    }
+    loadCounts()
+    const unsubscribe = onInventoryChanged(() => {
+      if (!cancelled) loadCounts()
     })
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [bins, repo])
 
   return (
@@ -46,10 +55,7 @@ export function HomePage() {
         value={query}
         onChange={setQuery}
         onSubmit={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
-        onVoiceClick={() => void voice.listen()}
       />
-
-      <VoiceStatus status={voice.status} transcript={voice.transcript} message={voice.result?.message} />
 
       <div className={styles.actions}>
         <Button icon={<Icons.Plus />} onClick={() => setCreateOpen(true)}>
