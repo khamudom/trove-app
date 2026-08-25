@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { VoiceControl } from './VoiceControl'
 
 const mocks = vi.hoisted(() => ({
@@ -81,5 +81,56 @@ describe('VoiceControl', () => {
     expect(screen.getAllByText('Added hammer to Toolbox').length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: 'View bin' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
+  })
+
+  describe('status banner auto-dismiss', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('dismisses the could not understand banner after a couple of seconds', async () => {
+      mocks.voice.status = 'done'
+      mocks.voice.transcript = 'Where is my passport'
+      mocks.voice.result = {
+        kind: 'message',
+        message: "Couldn't understand that",
+      }
+
+      render(
+        <MemoryRouter>
+          <VoiceControl />
+        </MemoryRouter>,
+      )
+
+      expect(screen.getByText("Couldn't understand that")).toBeInTheDocument()
+      expect(screen.getByText('“Where is my passport”')).toBeInTheDocument()
+      expect(mocks.voice.reset).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(3000)
+
+      expect(mocks.voice.reset).toHaveBeenCalled()
+    })
+
+    it('dismisses the listening error banner after a couple of seconds', async () => {
+      mocks.voice.status = 'error'
+      mocks.voice.transcript = 'Where is my passport'
+
+      render(
+        <MemoryRouter>
+          <VoiceControl />
+        </MemoryRouter>,
+      )
+
+      expect(screen.getByText("Couldn't understand that")).toBeInTheDocument()
+      expect(mocks.voice.reset).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(3000)
+
+      expect(mocks.voice.reset).toHaveBeenCalled()
+    })
   })
 })
