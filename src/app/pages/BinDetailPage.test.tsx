@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BinDetailPage } from './BinDetailPage'
 
 const bin = {
@@ -84,6 +84,8 @@ describe('BinDetailPage QR label', () => {
   beforeEach(() => {
     mocks.isSignedIn = true
     mocks.refresh.mockReset()
+    mocks.repo.createItem.mockReset()
+    mocks.repo.deleteItem.mockReset()
     document.body.innerHTML = ''
   })
 
@@ -105,5 +107,48 @@ describe('BinDetailPage QR label', () => {
       },
       { timeout: 400 },
     )
+  })
+})
+
+describe('BinDetailPage undo toast', () => {
+  beforeEach(() => {
+    mocks.isSignedIn = true
+    mocks.refresh.mockReset()
+    mocks.repo.createItem.mockReset()
+    mocks.repo.deleteItem.mockReset()
+    document.body.innerHTML = ''
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('dismisses the item-added undo toast after a few seconds', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    mocks.repo.createItem.mockResolvedValue({
+      id: 'item-new',
+      binId: 'bin-1',
+      name: 'Hammer',
+      tags: [],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    })
+
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Add item' }))
+    const nameField = await screen.findByRole('textbox', { name: /Name/ })
+    await user.type(nameField, 'Hammer')
+    await user.click(document.querySelector('.lumen-dialog button[type="submit"]') as HTMLButtonElement)
+
+    expect(await screen.findByText('Item added.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
+
+    await vi.advanceTimersByTimeAsync(4000)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Item added.')).not.toBeInTheDocument()
+    })
   })
 })

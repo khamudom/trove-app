@@ -12,6 +12,8 @@ import { trackRecentBin } from '@/repositories/localRepository'
 import { useBinDetail } from '@/hooks/useBins'
 import styles from './BinDetailPage.module.css'
 
+const UNDO_TOAST_DURATION_MS = 4000
+
 export function BinDetailPage() {
   const { binId = '' } = useParams()
   const [searchParams] = useSearchParams()
@@ -31,6 +33,12 @@ export function BinDetailPage() {
   useEffect(() => {
     if (binId) trackRecentBin(binId)
   }, [binId])
+
+  useEffect(() => {
+    if (!undoItemId) return
+    const timer = window.setTimeout(() => setUndoItemId(null), UNDO_TOAST_DURATION_MS)
+    return () => window.clearTimeout(timer)
+  }, [undoItemId])
 
   const editingItem = useMemo(() => bin?.items.find((item) => item.id === editItemId), [bin, editItemId])
 
@@ -122,6 +130,7 @@ export function BinDetailPage() {
                 Undo
               </Button>
             )}
+            onClose={() => setUndoItemId(null)}
           />
         </div>
       )}
