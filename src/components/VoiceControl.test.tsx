@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { VoiceControl } from './VoiceControl'
@@ -85,7 +85,7 @@ describe('VoiceControl', () => {
 
   describe('status banner auto-dismiss', () => {
     beforeEach(() => {
-      vi.useFakeTimers()
+      vi.useFakeTimers({ shouldAdvanceTime: true })
     })
 
     afterEach(() => {
@@ -112,9 +112,7 @@ describe('VoiceControl', () => {
 
       await vi.advanceTimersByTimeAsync(3000)
 
-      await waitFor(() => {
-        expect(mocks.voice.reset).toHaveBeenCalled()
-      })
+      expect(mocks.voice.reset).toHaveBeenCalled()
     })
 
     it('dismisses the listening error banner after a couple of seconds', async () => {
@@ -132,9 +130,7 @@ describe('VoiceControl', () => {
 
       await vi.advanceTimersByTimeAsync(3000)
 
-      await waitFor(() => {
-        expect(mocks.voice.reset).toHaveBeenCalled()
-      })
+      expect(mocks.voice.reset).toHaveBeenCalled()
     })
   })
 })
