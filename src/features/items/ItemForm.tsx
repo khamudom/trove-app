@@ -7,7 +7,6 @@ import styles from './ItemForm.module.css'
 interface ItemFormProps {
   initial?: Partial<Item>
   submitLabel: string
-  keepOpen?: boolean
   onSubmit: (values: {
     name: string
     description?: string
@@ -15,7 +14,7 @@ interface ItemFormProps {
   }) => Promise<void>
 }
 
-export function ItemForm({ initial, submitLabel, keepOpen = false, onSubmit }: ItemFormProps) {
+export function ItemForm({ initial, submitLabel, onSubmit }: ItemFormProps) {
   const [name, setName] = useState(initial?.name ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [tags, setTags] = useState(joinTags(initial?.tags ?? []))
@@ -29,11 +28,6 @@ export function ItemForm({ initial, submitLabel, keepOpen = false, onSubmit }: I
       tags: parseTagsInput(tags),
     })
     setLoading(false)
-    if (keepOpen) {
-      setName('')
-      setDescription('')
-      setTags('')
-    }
   }
 
   return (
