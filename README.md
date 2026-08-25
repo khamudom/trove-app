@@ -27,13 +27,13 @@ You know you own it — but where did you put it? Trove creates a searchable dig
 ## Architecture
 
 ```
-UI → feature hooks → repository layer → localStorage | Supabase
+UI → feature hooks → repository layer → in-memory guest store | Supabase
 Public QR scans → /b/:qrToken → Supabase RPC (read-only, no auth)
 ```
 
-### Local-first mode
+### Guest mode
 
-Signed-out users work entirely in `localStorage` with seeded demo data. No Supabase auth user is created automatically.
+Signed-out users can build **one bin** with items in an in-memory session store. Closing the app clears that data — nothing is written to Supabase or durable browser storage. Creating a second bin prompts sign-up. No anonymous Supabase auth user is created automatically.
 
 ### Account-backed QR labels
 
@@ -106,6 +106,7 @@ npm run build
 
 ## Limitations (MVP)
 
+- Guest sessions are limited to one in-memory bin; data is discarded when the app closes
 - No anonymous Supabase users
 - No cross-device sync without account sign-in
 - Public QR lookup requires Supabase (local-only bins have no public token)
