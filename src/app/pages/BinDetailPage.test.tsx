@@ -74,11 +74,29 @@ function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/bins/bin-1']}>
       <Routes>
+        <Route path="/bins" element={<div>All bins</div>} />
         <Route path="/bins/:binId" element={<BinDetailPage />} />
       </Routes>
     </MemoryRouter>,
   )
 }
+
+describe('BinDetailPage back navigation', () => {
+  beforeEach(() => {
+    mocks.isSignedIn = true
+    mocks.refresh.mockReset()
+    document.body.innerHTML = ''
+  })
+
+  it('shows a back control that returns to all bins', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Back to bins' }))
+
+    expect(screen.getByText('All bins')).toBeInTheDocument()
+  })
+})
 
 describe('BinDetailPage QR label', () => {
   beforeEach(() => {

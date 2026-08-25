@@ -26,12 +26,32 @@ function getNavIndex(pathname: string) {
   })
 }
 
-function getTransitionDirection(previousIndex: number, nextIndex: number): TransitionDirection | null {
-  if (previousIndex < 0 || nextIndex < 0 || previousIndex === nextIndex) {
+function getPathDepth(pathname: string) {
+  return pathname.split('/').filter(Boolean).length
+}
+
+function getTransitionDirection(
+  previousPathname: string,
+  nextPathname: string,
+  previousIndex: number,
+  nextIndex: number,
+): TransitionDirection | null {
+  if (previousIndex < 0 || nextIndex < 0) {
     return null
   }
 
-  return nextIndex > previousIndex ? 'forward' : 'backward'
+  if (previousIndex !== nextIndex) {
+    return nextIndex > previousIndex ? 'forward' : 'backward'
+  }
+
+  // Same tab — animate nested drill-in / drill-out (e.g. /bins ↔ /bins/:id).
+  const previousDepth = getPathDepth(previousPathname)
+  const nextDepth = getPathDepth(nextPathname)
+  if (previousDepth === nextDepth) {
+    return null
+  }
+
+  return nextDepth > previousDepth ? 'forward' : 'backward'
 }
 
 function getIsMobile() {
@@ -95,7 +115,14 @@ export function AppShell() {
       navIndex: getNavIndex(location.pathname),
       node: outletRef.current,
     }
-    const direction = isMobile ? getTransitionDirection(activeScreen.navIndex, nextScreen.navIndex) : null
+    const direction = isMobile
+      ? getTransitionDirection(
+          activeScreen.pathname,
+          nextScreen.pathname,
+          activeScreen.navIndex,
+          nextScreen.navIndex,
+        )
+      : null
 
     if (timeoutRef.current !== null) {
       window.clearTimeout(timeoutRef.current)
