@@ -1,10 +1,21 @@
-.choices,
-.sheetActions {
+.choices {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-.sheetActions {
-  margin-top: var(--space-4);
+.toastBar {
+  pointer-events: auto;
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + var(--space-4));
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(calc(100% - 2 * var(--space-4)), 26rem);
+}
+
+@media (min-width: 960px) {
+  .toastBar {
+    bottom: var(--space-6);
+  }
 }

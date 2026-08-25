@@ -1,8 +1,12 @@
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { Button, Drawer } from '@khamudom/lumen-ui-react'
+import { Button, Toast } from '@khamudom/lumen-ui-react'
 import type { Bin } from '@/types'
 import type { VoiceActionResult } from '@/features/voice/useVoiceCommand'
 import styles from './VoiceCommandResult.module.css'
+
+const ADDED_TOAST_DURATION_MS = 4000
 
 interface VoiceCommandResultProps {
   result: VoiceActionResult | null
@@ -13,6 +17,12 @@ interface VoiceCommandResultProps {
 
 export function VoiceCommandResult({ result, onCompleteAdd, onUndo, onReset }: VoiceCommandResultProps) {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (result?.kind !== 'added_item') return
+    const timer = window.setTimeout(() => onReset(), ADDED_TOAST_DURATION_MS)
+    return () => window.clearTimeout(timer)
+  }, [result, onReset])
 
   if (!result) return null
 
@@ -36,30 +46,27 @@ export function VoiceCommandResult({ result, onCompleteAdd, onUndo, onReset }: V
         </div>
       )}
 
-      {result.kind === 'added_item' && result.binId && (
-        <Drawer
-          open
-          heading="Added"
-          right
-          onOpenChange={(open) => {
-            if (!open) onReset()
-          }}
-        >
-          <p>{result.message}</p>
-          <div className={styles.sheetActions}>
-            <Button onClick={() => navigate(`/bins/${result.binId}`)}>View bin</Button>
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                if (result.itemId) await onUndo(result.itemId)
-                onReset()
-              }}
-            >
-              Undo
-            </Button>
-          </div>
-        </Drawer>
-      )}
+      {result.kind === 'added_item' &&
+        createPortal(
+          <div className={styles.toastBar} role="status" aria-live="polite">
+            <Toast
+              title="Item added."
+              action={(
+                <Button
+                  variant="ghost"
+                  onClick={async () => {
+                    if (result.itemId) await onUndo(result.itemId)
+                    onReset()
+                  }}
+                >
+                  Undo
+                </Button>
+              )}
+              onClose={onReset}
+            />
+          </div>,
+          document.body,
+        )}
     </>
   )
 }

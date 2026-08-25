@@ -49,7 +49,9 @@ export function VoiceControl() {
   return (
     <div className={styles.root}>
       <div className={styles.panel}>
-        <VoiceStatus status={status} transcript={transcript} message={result?.message} />
+        {result?.kind !== 'added_item' && (
+          <VoiceStatus status={status} transcript={transcript} message={result?.message} />
+        )}
 
         <VoiceCommandResult
           result={result}
