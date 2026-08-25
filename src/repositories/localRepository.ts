@@ -1,4 +1,5 @@
 import { createId, normalizeText, nowIso } from '@/lib/utils'
+import { GUEST_BIN_LIMIT_MESSAGE } from '@/features/auth/guestBinLimit'
 import type {
   Bin,
   BinWithItems,
@@ -18,8 +19,7 @@ const LEGACY_STORAGE_KEY = 'trove-local-data'
 const LEGACY_STORAGE_KEY_V2 = 'trove-local-data-v2'
 const LEGACY_RECENT_KEY = 'trove-recent-bins'
 
-export const GUEST_BIN_LIMIT_MESSAGE =
-  'To create more bins you must sign up and create an account.'
+export { GUEST_BIN_LIMIT_MESSAGE }
 
 interface Store {
   bins: Bin[]
