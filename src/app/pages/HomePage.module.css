@@ -10,13 +10,6 @@
   gap: var(--space-3);
 }
 
-.kicker {
-  font-size: var(--text-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-ink-subtle);
-}
-
 .title {
   font-size: clamp(var(--text-3xl), 8vw, 3.5rem);
 }
