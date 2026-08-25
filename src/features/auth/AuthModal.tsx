@@ -90,7 +90,7 @@ export function AuthModal({
           {!isConfigured && (
             <Alert>
               <AlertDescription>
-                Supabase is not configured yet. Trove will keep working locally, but accounts require environment setup.
+                Accounts aren't available right now. You can keep using your guest bin for this visit.
               </AlertDescription>
             </Alert>
           )}

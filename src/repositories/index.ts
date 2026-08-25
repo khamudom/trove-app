@@ -1,4 +1,4 @@
-import { LocalRepository } from './localRepository'
+import { clearLocalStore, LocalRepository } from './localRepository'
 import { SupabasePublicBinReader, SupabaseRepository } from './supabaseRepository'
 import type { PublicBinReader, TroveRepository } from './types'
 
@@ -14,8 +14,11 @@ export function createPublicBinReader(): PublicBinReader {
   return new SupabasePublicBinReader()
 }
 
+/** Moves the guest bin into the signed-in account, then clears the ephemeral guest store. */
 export async function migrateLocalToAccount(localRepo: TroveRepository, supabaseRepo: TroveRepository) {
   const snapshot = await localRepo.exportSnapshot()
   if (snapshot.bins.length === 0) return { idMap: {}, bins: [], items: [] }
-  return supabaseRepo.importSnapshot(snapshot)
+  const result = await supabaseRepo.importSnapshot(snapshot)
+  clearLocalStore()
+  return result
 }

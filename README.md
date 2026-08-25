@@ -33,7 +33,7 @@ Public QR scans → /b/:qrToken → Supabase RPC (read-only, no auth)
 
 ### Guest mode
 
-Signed-out users can build **one bin** with items in an in-memory session store. Closing the app clears that data — nothing is written to Supabase or durable browser storage. Creating a second bin prompts sign-up. No anonymous Supabase auth user is created automatically.
+Signed-out users can build **one bin** with items in an in-memory session store — no account required. Closing the app clears that data — nothing is written to Supabase or durable browser storage. Trying to create a second bin opens a soft account gate (“Keep building your Trove”); after sign-up or sign-in the guest bin migrates into the account and Create bin reopens so they can finish Bin #2. No anonymous Supabase auth user is created automatically.
 
 ### Account-backed QR labels
 
@@ -106,7 +106,8 @@ npm run build
 
 ## Limitations (MVP)
 
-- Guest sessions are limited to one in-memory bin; data is discarded when the app closes
+- Guest sessions are limited to one in-memory bin; creating another prompts account creation, then resumes Create bin after migrate
+- Guest data is discarded when the app closes (and cleared after successful account migration)
 - No anonymous Supabase users
 - No cross-device sync without account sign-in
 - Public QR lookup requires Supabase (local-only bins have no public token)
