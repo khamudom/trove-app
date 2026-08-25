@@ -64,12 +64,13 @@ VITE_SUPABASE_ANON_KEY=
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Run the migration in `supabase/migrations/001_initial_schema.sql`.
+2. Run the migrations in `supabase/migrations/` (`001_initial_schema.sql`, then `002_users.sql`).
 3. Enable email/password auth.
 4. Add env vars and restart the dev server.
 
-The migration creates:
+The migrations create:
 
+- `users` table (1:1 with `auth.users`) with owner RLS, signup trigger, and email sync
 - `bins` and `items` tables with owner RLS
 - Unique CSPRNG `qr_token` per bin
 - `get_public_bin_by_qr_token` RPC for unauthenticated read-only access
