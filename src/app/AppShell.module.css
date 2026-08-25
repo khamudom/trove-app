@@ -21,6 +21,7 @@
 
 .screen {
   min-width: 0;
+  background: var(--color-paper);
 }
 
 .loading {
