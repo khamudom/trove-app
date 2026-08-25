@@ -13,9 +13,13 @@ import type {
 } from '@/types'
 import type { TroveRepository } from './types'
 
-const STORAGE_KEY = 'trove-local-data-v2'
-const RECENT_KEY = 'trove-recent-bins'
+/** Legacy keys from older builds that persisted guest data. Cleared on load. */
 const LEGACY_STORAGE_KEY = 'trove-local-data'
+const LEGACY_STORAGE_KEY_V2 = 'trove-local-data-v2'
+const LEGACY_RECENT_KEY = 'trove-recent-bins'
+
+export const GUEST_BIN_LIMIT_MESSAGE =
+  'To create more bins you must sign up and create an account.'
 
 interface Store {
   bins: Bin[]
@@ -26,29 +30,18 @@ function emptyStore(): Store {
   return { bins: [], items: [] }
 }
 
-function loadStore(): Store {
-  // Drop the previous mock-seeded local store so the app starts empty.
-  if (localStorage.getItem(LEGACY_STORAGE_KEY) !== null) {
-    localStorage.removeItem(LEGACY_STORAGE_KEY)
-    localStorage.removeItem(RECENT_KEY)
-  }
+/** Guest inventory lives in memory only — closing the app clears everything. */
+let memoryStore: Store = emptyStore()
+let recentBinIds: string[] = []
 
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (raw) {
-    try {
-      return JSON.parse(raw) as Store
-    } catch {
-      // fall through
-    }
-  }
-  const store = emptyStore()
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
-  return store
+function purgeLegacyLocalStorage(): void {
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(LEGACY_STORAGE_KEY)
+  localStorage.removeItem(LEGACY_STORAGE_KEY_V2)
+  localStorage.removeItem(LEGACY_RECENT_KEY)
 }
 
-function saveStore(store: Store): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
-}
+purgeLegacyLocalStorage()
 
 function searchStore(store: Store, query: string): SearchResult[] {
   const q = normalizeText(query)
@@ -101,7 +94,11 @@ function searchStore(store: Store, query: string): SearchResult[] {
 
 export class LocalRepository implements TroveRepository {
   private getStore(): Store {
-    return loadStore()
+    return memoryStore
+  }
+
+  private saveStore(store: Store): void {
+    memoryStore = store
   }
 
   async listBins(): Promise<Bin[]> {
@@ -124,6 +121,9 @@ export class LocalRepository implements TroveRepository {
 
   async createBin(input: CreateBinInput): Promise<Bin> {
     const store = this.getStore()
+    if (store.bins.length >= 1) {
+      throw new Error(GUEST_BIN_LIMIT_MESSAGE)
+    }
     const now = nowIso()
     const bin: Bin = {
       id: createId(),
@@ -136,8 +136,8 @@ export class LocalRepository implements TroveRepository {
       createdAt: now,
       updatedAt: now,
     }
-    store.bins.unshift(bin)
-    saveStore(store)
+    const next = { bins: [bin, ...store.bins], items: [...store.items] }
+    this.saveStore(next)
     return bin
   }
 
@@ -156,16 +156,19 @@ export class LocalRepository implements TroveRepository {
       tags: input.tags ?? current.tags,
       updatedAt: nowIso(),
     }
-    store.bins[index] = updated
-    saveStore(store)
+    const bins = [...store.bins]
+    bins[index] = updated
+    this.saveStore({ bins, items: store.items })
     return updated
   }
 
   async deleteBin(id: string): Promise<void> {
     const store = this.getStore()
-    store.bins = store.bins.filter((b) => b.id !== id)
-    store.items = store.items.filter((i) => i.binId !== id)
-    saveStore(store)
+    this.saveStore({
+      bins: store.bins.filter((b) => b.id !== id),
+      items: store.items.filter((i) => i.binId !== id),
+    })
+    recentBinIds = recentBinIds.filter((entry) => entry !== id)
   }
 
   async listItems(binId: string): Promise<Item[]> {
@@ -185,10 +188,10 @@ export class LocalRepository implements TroveRepository {
       createdAt: now,
       updatedAt: now,
     }
-    store.items.push(item)
-    const binIndex = store.bins.findIndex((b) => b.id === input.binId)
-    if (binIndex >= 0) store.bins[binIndex].updatedAt = now
-    saveStore(store)
+    const bins = store.bins.map((bin) =>
+      bin.id === input.binId ? { ...bin, updatedAt: now } : bin,
+    )
+    this.saveStore({ bins, items: [...store.items, item] })
     return item
   }
 
@@ -205,15 +208,18 @@ export class LocalRepository implements TroveRepository {
       tags: input.tags ?? current.tags,
       updatedAt: nowIso(),
     }
-    store.items[index] = updated
-    saveStore(store)
+    const items = [...store.items]
+    items[index] = updated
+    this.saveStore({ bins: store.bins, items })
     return updated
   }
 
   async deleteItem(id: string): Promise<void> {
     const store = this.getStore()
-    store.items = store.items.filter((i) => i.id !== id)
-    saveStore(store)
+    this.saveStore({
+      bins: store.bins,
+      items: store.items.filter((i) => i.id !== id),
+    })
   }
 
   async search(query: string): Promise<SearchResult[]> {
@@ -226,27 +232,21 @@ export class LocalRepository implements TroveRepository {
   }
 
   async importSnapshot(snapshot: LocalSnapshot): Promise<ImportResult> {
-    saveStore({ bins: snapshot.bins, items: snapshot.items })
+    this.saveStore({ bins: snapshot.bins, items: snapshot.items })
     return { idMap: Object.fromEntries(snapshot.bins.map((b) => [b.id, b.id])), bins: snapshot.bins, items: snapshot.items }
   }
 }
 
 export function getRecentBinIds(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]') as string[]
-  } catch {
-    return []
-  }
+  return [...recentBinIds]
 }
 
 export function trackRecentBin(id: string): void {
-  const recent = getRecentBinIds().filter((entry) => entry !== id)
-  recent.unshift(id)
-  localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 8)))
+  recentBinIds = [id, ...recentBinIds.filter((entry) => entry !== id)].slice(0, 8)
 }
 
 export function clearLocalStore(): void {
-  localStorage.removeItem(STORAGE_KEY)
-  localStorage.removeItem(LEGACY_STORAGE_KEY)
-  localStorage.removeItem(RECENT_KEY)
+  memoryStore = emptyStore()
+  recentBinIds = []
+  purgeLegacyLocalStorage()
 }

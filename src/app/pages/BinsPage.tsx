@@ -4,6 +4,8 @@ import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Icons } from '@/components/Icons'
+import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
+import { GUEST_SECOND_BIN_DESCRIPTION, GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
 import { BinForm } from '@/features/bins/BinForm'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useBins } from '@/hooks/useBins'
@@ -11,9 +13,10 @@ import styles from './BinsPage.module.css'
 
 export function BinsPage() {
   const navigate = useNavigate()
-  const { repo } = useAuth()
+  const { repo, isSignedIn } = useAuth()
   const { bins, loading, refresh } = useBins()
   const [createOpen, setCreateOpen] = useState(false)
+  const [authGateOpen, setAuthGateOpen] = useState(false)
   const [counts, setCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
@@ -22,6 +25,14 @@ export function BinsPage() {
     })
   }, [bins, repo])
 
+  const requestCreateBin = () => {
+    if (!isSignedIn && bins.length >= 1) {
+      setAuthGateOpen(true)
+      return
+    }
+    setCreateOpen(true)
+  }
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -29,7 +40,7 @@ export function BinsPage() {
           <h1>Bins</h1>
           <p className={styles.subtitle}>Your physical storage, organized.</p>
         </div>
-        <Button icon={<Icons.Plus />} onClick={() => setCreateOpen(true)}>
+        <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
           Add bin
         </Button>
       </header>
@@ -38,7 +49,7 @@ export function BinsPage() {
         <EmptyState
           title="Your Trove is empty"
           description="Create your first bin to start keeping track of where everything lives."
-          action={<Button onClick={() => setCreateOpen(true)}>Create bin</Button>}
+          action={<Button onClick={requestCreateBin}>Create bin</Button>}
         />
       ) : (
         <div className={styles.grid}>
@@ -67,6 +78,17 @@ export function BinsPage() {
           }}
         />
       </Dialog>
+
+      <AuthGateSheet
+        open={authGateOpen}
+        title={GUEST_SECOND_BIN_TITLE}
+        description={GUEST_SECOND_BIN_DESCRIPTION}
+        onClose={() => setAuthGateOpen(false)}
+        onSuccess={() => {
+          setAuthGateOpen(false)
+          setCreateOpen(true)
+        }}
+      />
     </div>
   )
 }
