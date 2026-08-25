@@ -8,6 +8,8 @@ import { useVoiceCommand } from '@/features/voice/useVoiceCommand'
 import { notifyInventoryChanged } from '@/lib/inventoryEvents'
 import styles from './VoiceControl.module.css'
 
+const VOICE_STATUS_DISMISS_MS = 3000
+
 export function VoiceControl() {
   const navigate = useNavigate()
   const { repo } = useAuth()
@@ -29,6 +31,18 @@ export function VoiceControl() {
   useEffect(() => {
     if (result?.kind === 'added_item') notifyInventoryChanged()
   }, [result])
+
+  useEffect(() => {
+    const shouldDismiss =
+      status === 'error' ||
+      status === 'unsupported' ||
+      result?.kind === 'message'
+
+    if (!shouldDismiss) return
+
+    const timer = window.setTimeout(() => reset(), VOICE_STATUS_DISMISS_MS)
+    return () => window.clearTimeout(timer)
+  }, [status, result, reset])
 
   const micClass = [styles.mic, listening ? styles.micListening : ''].filter(Boolean).join(' ')
 
