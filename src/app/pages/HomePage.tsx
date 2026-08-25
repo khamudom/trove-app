@@ -38,7 +38,6 @@ export function HomePage() {
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
-        <p className={styles.kicker}>Store → Label → Scan → Find</p>
         <h1 className={styles.title}>Trove</h1>
         <p className={styles.subtitle}>Know what you own. Know where it lives.</p>
       </header>
