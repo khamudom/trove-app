@@ -11,7 +11,14 @@ type RecognitionHandlers = {
 }
 
 function installMockRecognition() {
-  const instances: Array<RecognitionHandlers & { start: ReturnType<typeof vi.fn>; abort: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn> }> = []
+  const instances: Array<
+    RecognitionHandlers & {
+      continuous: boolean
+      start: ReturnType<typeof vi.fn>
+      abort: ReturnType<typeof vi.fn>
+      stop: ReturnType<typeof vi.fn>
+    }
+  > = []
 
   class MockSpeechRecognition {
     lang = ''
