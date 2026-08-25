@@ -137,10 +137,10 @@ export function BinDetailPage() {
 
       <Dialog open={addItemOpen} heading="Add item" onOpenChange={setAddItemOpen}>
         <ItemForm
-          keepOpen
           submitLabel="Add item"
           onSubmit={async (values) => {
             const item = await repo.createItem({ binId: bin.id, ...values })
+            setAddItemOpen(false)
             setUndoItemId(item.id)
             await refresh()
           }}

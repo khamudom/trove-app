@@ -124,7 +124,7 @@ describe('BinDetailPage undo toast', () => {
     vi.useRealTimers()
   })
 
-  it('dismisses the item-added undo toast after a few seconds', async () => {
+  it('closes the add item dialog and dismisses the undo toast after a few seconds', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     mocks.repo.createItem.mockResolvedValue({
       id: 'item-new',
@@ -138,10 +138,15 @@ describe('BinDetailPage undo toast', () => {
     renderPage()
 
     await user.click(screen.getByRole('button', { name: 'Add item' }))
+    expect(await screen.findByRole('heading', { name: 'Add item' })).toBeInTheDocument()
+
     const nameField = await screen.findByRole('textbox', { name: /Name/ })
     await user.type(nameField, 'Hammer')
     await user.click(document.querySelector('.lumen-dialog button[type="submit"]') as HTMLButtonElement)
 
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'Add item' })).not.toBeInTheDocument()
+    })
     expect(await screen.findByText('Item added.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
 
