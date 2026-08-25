@@ -49,7 +49,7 @@ export function ProfilePage() {
           ) : (
             <>
               <p className={styles.copy}>
-                Guests can build one bin for this visit. Sign up to save your data, create more bins, and print QR labels.
+                Build one bin as a guest. Create a free account to add more bins and keep everything available across your devices.
               </p>
               {!isConfigured && (
                 <Alert>
