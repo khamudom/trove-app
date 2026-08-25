@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AlertDialog, Badge, Button, Dialog, Drawer, Toast } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
+import { Icons } from '@/components/Icons'
 import { ItemCard } from '@/components/ItemCard'
 import { QRLabel } from '@/components/QRLabel'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
@@ -63,6 +64,15 @@ export function BinDetailPage() {
 
   return (
     <div className={styles.page}>
+      <button
+        type="button"
+        className={styles.back}
+        aria-label="Back to bins"
+        onClick={() => navigate('/bins')}
+      >
+        <Icons.Back className={styles.backIcon} />
+      </button>
+
       <div className={styles.hero}>
         {bin.previewImage && <img src={bin.previewImage} alt="" className={styles.preview} />}
         <div>
