@@ -27,7 +27,7 @@ export function ProfilePage() {
       <header>
         <h1>Profile</h1>
         <p className={styles.subtitle}>
-          {isSignedIn ? 'Your Trove account' : 'You are using Trove on this device'}
+          {isSignedIn ? 'Your Trove account' : 'Trying Trove as a guest'}
         </p>
       </header>
 
@@ -49,12 +49,12 @@ export function ProfilePage() {
           ) : (
             <>
               <p className={styles.copy}>
-                Sign in or create an account to sync bins across devices and print QR labels.
+                Guests can build one bin for this visit. Sign up to save your data, create more bins, and print QR labels.
               </p>
               {!isConfigured && (
                 <Alert>
                   <AlertDescription>
-                    Supabase is not configured yet. Local bins still work on this device.
+                    Supabase is not configured yet. Guest bins stay in this session only and are not saved.
                   </AlertDescription>
                 </Alert>
               )}
@@ -81,7 +81,7 @@ export function ProfilePage() {
         open={signOutOpen}
         role="alertdialog"
         title="Sign out?"
-        description="You'll keep using Trove on this device with local bins. Account bins stay in the cloud until you sign back in."
+        description="You'll return to a guest session. Account bins stay in the cloud until you sign back in."
         actionLabel="Sign out"
         onOpenChange={setSignOutOpen}
         onAction={() => {

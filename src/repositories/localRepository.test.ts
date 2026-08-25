@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { LocalRepository, clearLocalStore } from '@/repositories/localRepository'
+import {
+  LocalRepository,
+  clearLocalStore,
+  getRecentBinIds,
+  trackRecentBin,
+  GUEST_BIN_LIMIT_MESSAGE,
+} from '@/repositories/localRepository'
 import { getQrUrl } from '@/lib/utils'
 
 describe('LocalRepository', () => {
@@ -46,6 +52,42 @@ describe('LocalRepository', () => {
     const repo = new LocalRepository()
     const bin = await repo.createBin({ name: 'Local Only' })
     expect(bin.qrToken).toBeUndefined()
+  })
+
+  it('limits guests to one bin', async () => {
+    const repo = new LocalRepository()
+    await repo.createBin({ name: 'First' })
+    await expect(repo.createBin({ name: 'Second' })).rejects.toThrow(GUEST_BIN_LIMIT_MESSAGE)
+    expect(await repo.listBins()).toHaveLength(1)
+  })
+
+  it('allows a new bin after the guest deletes their only bin', async () => {
+    const repo = new LocalRepository()
+    const first = await repo.createBin({ name: 'First' })
+    await repo.deleteBin(first.id)
+    const second = await repo.createBin({ name: 'Second' })
+    expect(second.name).toBe('Second')
+  })
+
+  it('keeps guest data in memory only — not localStorage', async () => {
+    const repo = new LocalRepository()
+    await repo.createBin({ name: 'Ephemeral' })
+    expect(localStorage.getItem('trove-local-data-v2')).toBeNull()
+    expect(localStorage.getItem('trove-local-data')).toBeNull()
+  })
+
+  it('shares in-memory state across repository instances', async () => {
+    const a = new LocalRepository()
+    const b = new LocalRepository()
+    await a.createBin({ name: 'Shared' })
+    expect(await b.listBins()).toHaveLength(1)
+  })
+
+  it('tracks recent bins in memory only', () => {
+    trackRecentBin('bin-a')
+    trackRecentBin('bin-b')
+    expect(getRecentBinIds()).toEqual(['bin-b', 'bin-a'])
+    expect(localStorage.getItem('trove-recent-bins')).toBeNull()
   })
 })
 

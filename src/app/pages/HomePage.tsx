@@ -4,6 +4,8 @@ import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { Icons } from '@/components/Icons'
 import { SearchField } from '@/components/SearchField'
+import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
+import { GUEST_SECOND_BIN_DESCRIPTION, GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
 import { BinForm } from '@/features/bins/BinForm'
 import { useAuth } from '@/features/auth/AuthContext'
 import { onInventoryChanged } from '@/lib/inventoryEvents'
@@ -13,10 +15,11 @@ import styles from './HomePage.module.css'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { repo } = useAuth()
+  const { repo, isSignedIn } = useAuth()
   const { bins, refresh } = useBins()
   const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [authGateOpen, setAuthGateOpen] = useState(false)
 
   const recentBins = useMemo(() => {
     const recentIds = getRecentBinIds()
@@ -44,6 +47,14 @@ export function HomePage() {
     }
   }, [bins, repo])
 
+  const requestCreateBin = () => {
+    if (!isSignedIn && bins.length >= 1) {
+      setAuthGateOpen(true)
+      return
+    }
+    setCreateOpen(true)
+  }
+
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
@@ -58,7 +69,7 @@ export function HomePage() {
       />
 
       <div className={styles.actions}>
-        <Button icon={<Icons.Plus />} onClick={() => setCreateOpen(true)}>
+        <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
           Add bin
         </Button>
         <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
@@ -96,6 +107,17 @@ export function HomePage() {
           }}
         />
       </Dialog>
+
+      <AuthGateSheet
+        open={authGateOpen}
+        title={GUEST_SECOND_BIN_TITLE}
+        description={GUEST_SECOND_BIN_DESCRIPTION}
+        onClose={() => setAuthGateOpen(false)}
+        onSuccess={() => {
+          setAuthGateOpen(false)
+          setCreateOpen(true)
+        }}
+      />
     </div>
   )
 }
