@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from './HomePage'
-import { GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
+import {
+  GUEST_SECOND_BIN_DESCRIPTION,
+  GUEST_SECOND_BIN_TITLE,
+} from '@/features/auth/guestBinLimit'
 
 const mocks = vi.hoisted(() => ({
   bins: [] as Array<{
@@ -19,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   createBin: vi.fn(),
   deleteItem: vi.fn(),
   refresh: vi.fn(),
+  signUp: vi.fn(),
   isSignedIn: false,
 }))
 
@@ -33,7 +37,7 @@ vi.mock('@/features/auth/AuthContext', () => ({
       deleteItem: mocks.deleteItem,
     },
     signIn: vi.fn(),
-    signUp: vi.fn(),
+    signUp: mocks.signUp,
   }),
 }))
 
@@ -58,6 +62,7 @@ describe('HomePage', () => {
     mocks.createBin.mockReset()
     mocks.deleteItem.mockReset()
     mocks.refresh.mockReset()
+    mocks.signUp.mockReset()
   })
 
   it('hides the recent bins title when there are no bins', () => {
@@ -104,7 +109,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
   })
 
-  it('prompts guests to sign up when they already have a bin', async () => {
+  it('prompts guests to keep building when they already have a bin', async () => {
     const user = userEvent.setup()
     mocks.bins = [
       {
@@ -124,7 +129,38 @@ describe('HomePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add bin' }))
     expect(screen.getByRole('heading', { name: GUEST_SECOND_BIN_TITLE })).toBeInTheDocument()
+    expect(screen.getByText(GUEST_SECOND_BIN_DESCRIPTION)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Already have an account? Sign in' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Create bin' })).not.toBeInTheDocument()
+  })
+
+  it('resumes create bin after the guest account gate succeeds', async () => {
+    const user = userEvent.setup()
+    mocks.signUp.mockResolvedValue({ needsConfirmation: false })
+    mocks.bins = [
+      {
+        id: 'bin-1',
+        name: 'Toolbox',
+        tags: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ]
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Add bin' }))
+    await user.type(screen.getByLabelText(/email/i), 'you@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'secret1')
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+
+    expect(mocks.signUp).toHaveBeenCalledWith('you@example.com', 'secret1')
+    expect(await screen.findByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
   })
 
   it('lets signed-in users create another bin', async () => {
