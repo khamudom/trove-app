@@ -10,6 +10,22 @@ describe('parseVoiceCommand', () => {
     })
   })
 
+  it('strips leading articles from add item commands', () => {
+    expect(parseVoiceCommand('Add a hammer to the toolbox').command).toEqual({
+      intent: 'add_item',
+      itemName: 'hammer',
+      binName: 'toolbox',
+    })
+  })
+
+  it('parses put item in bin commands', () => {
+    expect(parseVoiceCommand('Put hammer in the toolbox').command).toEqual({
+      intent: 'add_item',
+      itemName: 'hammer',
+      binName: 'toolbox',
+    })
+  })
+
   it('parses find item commands', () => {
     expect(parseVoiceCommand('Where did I put the hammer?').command).toEqual({
       intent: 'find_item',

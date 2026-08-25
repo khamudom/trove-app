@@ -14,7 +14,12 @@ type SpeechRecognitionCtor = new () => {
   interimResults: boolean
   maxAlternatives: number
   continuous: boolean
-  onresult: ((event: { results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> }) => void) | null
+  onresult:
+    | ((event: {
+        resultIndex: number
+        results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean; length: number }>
+      }) => void)
+    | null
   onerror: ((event: { error: string }) => void) | null
   onend: (() => void) | null
   start: () => void
@@ -43,6 +48,8 @@ export class BrowserSpeechService implements SpeechService {
       onError('Microphone unavailable')
       return Promise.reject(new Error('Speech recognition unsupported'))
     }
+
+    this.stop()
 
     return new Promise((resolve, reject) => {
       const recognition = new Ctor()
@@ -77,8 +84,22 @@ export class BrowserSpeechService implements SpeechService {
   }
 
   stop(): void {
-    this.recognition?.stop()
+    const recognition = this.recognition
     this.recognition = null
+    if (recognition) {
+      recognition.onresult = null
+      recognition.onerror = null
+      recognition.onend = null
+      try {
+        recognition.abort()
+      } catch {
+        try {
+          recognition.stop()
+        } catch {
+          // Recognition may already be stopped.
+        }
+      }
+    }
   }
 }
 

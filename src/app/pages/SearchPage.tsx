@@ -1,49 +1,45 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Card, CardTitle, CardDescription, Drawer } from '@khamudom/lumen-ui-react'
+import { Card, CardTitle, CardDescription } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { SearchField } from '@/components/SearchField'
-import { VoiceStatus } from '@/components/VoiceStatus'
 import { useAuth } from '@/features/auth/AuthContext'
-import { useVoiceCommand } from '@/features/voice/useVoiceCommand'
 import type { SearchResult } from '@/types'
 import styles from './SearchPage.module.css'
 
 export function SearchPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const initialQuery = params.get('q') ?? ''
-  const [query, setQuery] = useState(initialQuery)
+  const queryParam = params.get('q') ?? ''
+  const [query, setQuery] = useState(queryParam)
   const [results, setResults] = useState<SearchResult[]>([])
   const [searched, setSearched] = useState(false)
   const { repo } = useAuth()
-  const voice = useVoiceCommand(repo)
 
-  const runSearch = async (value: string) => {
+  const runSearch = (value: string) => {
     const trimmed = value.trim()
-    const current = (params.get('q') ?? '').trim()
-    if (trimmed !== current) {
-      setParams(trimmed ? { q: trimmed } : {}, { replace: true })
-    }
-    const next = trimmed ? await repo.search(trimmed) : []
-    setResults(next)
-    setSearched(Boolean(trimmed))
+    setParams(trimmed ? { q: trimmed } : {}, { replace: true })
   }
 
   useEffect(() => {
-    if (initialQuery) void runSearch(initialQuery)
-  }, [])
+    setQuery(queryParam)
+    const trimmed = queryParam.trim()
+    if (!trimmed) {
+      setResults([])
+      setSearched(false)
+      return
+    }
 
-  useEffect(() => {
-    if (voice.result?.kind === 'search') {
-      setResults(voice.result.results ?? [])
+    let cancelled = false
+    void repo.search(trimmed).then((next) => {
+      if (cancelled) return
+      setResults(next)
       setSearched(true)
-      if (voice.result.results?.[0]) setQuery(voice.result.results[0].title)
+    })
+    return () => {
+      cancelled = true
     }
-    if (voice.result?.kind === 'navigate' && voice.result.binId) {
-      navigate(`/bins/${voice.result.binId}`)
-    }
-  }, [voice.result, navigate])
+  }, [queryParam])
 
   return (
     <div className={styles.page}>
@@ -55,30 +51,9 @@ export function SearchPage() {
       <SearchField
         value={query}
         onChange={setQuery}
-        onSubmit={() => void runSearch(query)}
-        onVoiceClick={() => void voice.listen()}
+        onSubmit={() => runSearch(query)}
         autoFocus
       />
-
-      <VoiceStatus status={voice.status} transcript={voice.transcript} message={voice.result?.message} />
-
-      {voice.result?.kind === 'confirm_bin' && voice.result.candidates && (
-        <div className={styles.choices}>
-          <p>{voice.result.message}</p>
-          {voice.result.candidates.map((bin) => (
-            <Button
-              key={bin.id}
-              variant="secondary"
-              onClick={() => {
-                if (voice.result?.itemName) void voice.completeAddToBin(bin, voice.result.itemName)
-                else navigate(`/bins/${bin.id}`)
-              }}
-            >
-              {bin.name}
-            </Button>
-          ))}
-        </div>
-      )}
 
       {searched && results.length === 0 && (
         <EmptyState
@@ -111,31 +86,6 @@ export function SearchPage() {
             </li>
           ))}
         </ul>
-      )}
-
-      {voice.result?.kind === 'added_item' && voice.result.binId && (
-        <Drawer
-          open
-          heading="Added"
-          right
-          onOpenChange={(open) => {
-            if (!open) voice.reset()
-          }}
-        >
-          <p>{voice.result.message}</p>
-          <div className={styles.sheetActions}>
-            <Button onClick={() => navigate(`/bins/${voice.result?.binId}`)}>View bin</Button>
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                if (voice.result?.itemId) await repo.deleteItem(voice.result.itemId)
-                voice.reset()
-              }}
-            >
-              Undo
-            </Button>
-          </div>
-        </Drawer>
       )}
     </div>
   )

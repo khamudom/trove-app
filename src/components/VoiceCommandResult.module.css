@@ -1,0 +1,10 @@
+.choices,
+.sheetActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.sheetActions {
+  margin-top: var(--space-4);
+}

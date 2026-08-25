@@ -11,6 +11,7 @@ export interface VoiceActionResult {
   kind: 'message' | 'search' | 'navigate' | 'confirm_bin' | 'create_bin' | 'added_item'
   message?: string
   results?: SearchResult[]
+  query?: string
   binId?: string
   itemId?: string
   itemName?: string
@@ -22,12 +23,6 @@ export function useVoiceCommand(repo: TroveRepository) {
   const [status, setStatus] = useState<VoiceUiStatus>('idle')
   const [transcript, setTranscript] = useState('')
   const [result, setResult] = useState<VoiceActionResult | null>(null)
-
-  const reset = useCallback(() => {
-    setStatus('idle')
-    setTranscript('')
-    setResult(null)
-  }, [])
 
   const resolveBinsByName = useCallback(async (binName: string) => {
     const bins = await repo.listBins()
@@ -41,7 +36,12 @@ export function useVoiceCommand(repo: TroveRepository) {
 
     if (command.intent === 'find_item' || command.intent === 'search') {
       const results = await repo.search(command.query)
-      return { kind: 'search', results, message: results.length ? undefined : "Couldn't find that in your Trove" }
+      return {
+        kind: 'search',
+        results,
+        query: command.query,
+        message: results.length ? undefined : "Couldn't find that in your Trove",
+      }
     }
 
     if (command.intent === 'show_bin' || command.intent === 'list_bin_contents') {
@@ -70,6 +70,13 @@ export function useVoiceCommand(repo: TroveRepository) {
 
     return { kind: 'message', message: "Couldn't understand that" }
   }, [repo, resolveBinsByName])
+
+  const reset = useCallback(() => {
+    setTranscript('')
+    setResult(null)
+    setStatus('idle')
+    speechService.stop()
+  }, [])
 
   const listen = useCallback(async () => {
     if (!speechService.isSupported()) {
@@ -110,5 +117,15 @@ export function useVoiceCommand(repo: TroveRepository) {
     setStatus('done')
   }, [repo])
 
-  return { status, transcript, result, listen, reset, executeParsed, completeAddToBin, stop: () => speechService.stop() }
+  return {
+    status,
+    transcript,
+    result,
+    listening: status === 'listening',
+    listen,
+    reset,
+    executeParsed,
+    completeAddToBin,
+    stop: () => speechService.stop(),
+  }
 }
