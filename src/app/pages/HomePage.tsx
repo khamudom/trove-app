@@ -55,20 +55,26 @@ export function HomePage() {
     setCreateOpen(true)
   }
 
+  const showInventoryShortcuts = isSignedIn || bins.length > 0
+
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
         <h1 className={styles.title}>Trove</h1>
-        <p className={styles.subtitle}>Know what you own. Know where it lives.</p>
+        {showInventoryShortcuts ? (
+          <p className={styles.subtitle}>Know what you own. Know where it lives.</p>
+        ) : null}
       </header>
 
-      <SearchField
-        value={query}
-        onChange={setQuery}
-        onSubmit={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
-      />
+      {showInventoryShortcuts ? (
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          onSubmit={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
+        />
+      ) : null}
 
-      {isSignedIn || bins.length > 0 ? (
+      {showInventoryShortcuts ? (
         <div className={styles.actions}>
           <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
             Add bin
