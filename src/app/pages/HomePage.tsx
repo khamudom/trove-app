@@ -94,7 +94,65 @@ export function HomePage() {
             ))}
           </div>
         </section>
-      ) : null}
+      ) : (
+        <section className={styles.welcome} aria-labelledby="welcome-title">
+          <div className={styles.welcomeIllustration} aria-hidden="true">
+            <span className={`${styles.sparkle} ${styles.sparkleOne}`}>✦</span>
+            <span className={`${styles.sparkle} ${styles.sparkleTwo}`}>✧</span>
+            <span className={`${styles.sparkle} ${styles.sparkleThree}`}>✦</span>
+            <div className={styles.memoryCard}>
+              <svg viewBox="0 0 150 112" role="presentation">
+                <path className={styles.boxBack} d="M27 38 75 17l48 21-48 23Z" />
+                <path className={styles.boxLeft} d="m27 38 48 23v42L27 79Z" />
+                <path className={styles.boxRight} d="m123 38-48 23v42l48-24Z" />
+                <path className={styles.boxTape} d="m61 23 48 22-15 8-48-23Z" />
+                <path className={styles.boxLabel} d="m85 68 25-12v17L85 85Z" />
+                <path className={styles.boxHeart} d="M92 70c1.5-4 7-3 7.2.4.2-3.5 5.8-5.2 7.3-1.1 1.4 3.7-6.6 9.7-6.6 9.7s-9.3-3.8-7.9-9Z" />
+              </svg>
+            </div>
+            <div className={styles.storyThread} />
+          </div>
+
+          <div className={styles.welcomeCopy}>
+            <p className={styles.eyebrow}>Your story starts here</p>
+            <h2 id="welcome-title" className={styles.welcomeTitle}>
+              Every little thing has a place in your story.
+            </h2>
+            <p className={styles.welcomeText}>
+              The holiday lights, your grandfather&apos;s tools, the camera waiting for your next
+              adventure—Trove remembers where they live, so you can spend less time searching and
+              more time making memories.
+            </p>
+            <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
+              Start your first bin
+            </Button>
+          </div>
+
+          <ol className={styles.storySteps} aria-label="How Trove works">
+            <li>
+              <span className={styles.stepNumber}>1</span>
+              <div>
+                <h3>Give it a home</h3>
+                <p>Create a bin for the things you want to keep close.</p>
+              </div>
+            </li>
+            <li>
+              <span className={styles.stepNumber}>2</span>
+              <div>
+                <h3>Remember what&apos;s inside</h3>
+                <p>Add each treasure once. Trove keeps the list for you.</p>
+              </div>
+            </li>
+            <li>
+              <span className={styles.stepNumber}>3</span>
+              <div>
+                <h3>Find it like magic</h3>
+                <p>Search, speak, or scan a label and know exactly where to look.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+      )}
 
       <Dialog open={createOpen} heading="Create bin" onOpenChange={setCreateOpen}>
         <BinForm
