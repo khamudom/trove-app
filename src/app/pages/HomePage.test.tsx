@@ -75,6 +75,20 @@ describe('HomePage', () => {
     expect(screen.queryByRole('heading', { name: 'Recent bins' })).not.toBeInTheDocument()
   })
 
+  it('introduces new users to Trove', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Everything you own. Right where you left it.' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'How Trove works' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create your first bin' })).toBeInTheDocument()
+  })
+
   it('shows the recent bins title when bins exist', () => {
     mocks.bins = [
       {
@@ -95,9 +109,25 @@ describe('HomePage', () => {
 
     expect(screen.getByRole('heading', { name: 'Recent bins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Toolbox' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
+    ).not.toBeInTheDocument()
   })
 
-  it('opens create bin for guests with no bins yet', async () => {
+  it('hides inventory shortcuts for signed-out users with no bins', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Add bin' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'All bins' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    expect(screen.queryByText('Know what you own. Know where it lives.')).not.toBeInTheDocument()
+  })
+
+  it('starts the first bin from the welcome panel', async () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
@@ -105,7 +135,7 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Add bin' }))
+    await user.click(screen.getByRole('button', { name: 'Create your first bin' }))
     expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
   })
 
