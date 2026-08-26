@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardTitle, CardDescription } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
+import { PageHeader } from '@/components/PageHeader'
 import { SearchField } from '@/components/SearchField'
 import { useAuth } from '@/features/auth/AuthContext'
 import type { SearchResult } from '@/types'
@@ -43,10 +44,7 @@ export function SearchPage() {
 
   return (
     <div className={styles.page}>
-      <header>
-        <h1>Search</h1>
-        <p className={styles.subtitle}>Find anything across bins, items, tags, and locations.</p>
-      </header>
+      <PageHeader title="Search" subtitle="Find anything across bins, items, tags, and locations." />
 
       <SearchField
         value={query}

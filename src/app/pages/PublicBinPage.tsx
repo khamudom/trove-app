@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
 import { ItemCard } from '@/components/ItemCard'
+import { PageHeader } from '@/components/PageHeader'
 import { createPublicBinReader } from '@/repositories'
 import { useAuth } from '@/features/auth/AuthContext'
 import type { PublicBin } from '@/types'
@@ -55,15 +56,17 @@ export function PublicBinPage() {
 
   return (
     <div className={styles.page}>
-      <p className={styles.kicker}>Scanned bin</p>
-      <header className={styles.header}>
-        {bin.previewImage && <img src={bin.previewImage} alt="" className={styles.preview} />}
-        <div>
-          <h1>{bin.name}</h1>
-          <p className={styles.meta}>{[bin.category, bin.location].filter(Boolean).join(' · ')}</p>
+      <PageHeader
+        title={bin.name}
+        subtitle={['Scanned bin', bin.category, bin.location].filter(Boolean).join(' · ')}
+        standalone
+      />
+      {bin.previewImage || bin.description ? (
+        <div className={styles.hero}>
+          {bin.previewImage && <img src={bin.previewImage} alt="" className={styles.preview} />}
           {bin.description && <p className={styles.description}>{bin.description}</p>}
         </div>
-      </header>
+      ) : null}
 
       <section>
         <h2>Contents</h2>
