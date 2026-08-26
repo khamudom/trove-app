@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
 } from '@khamudom/lumen-ui-react'
+import { PageHeader } from '@/components/PageHeader'
 import { AuthModal, type AuthMode } from '@/features/auth/AuthModal'
 import { useAuth } from '@/features/auth/AuthContext'
 import styles from './ProfilePage.module.css'
@@ -18,18 +19,23 @@ export function ProfilePage() {
   const [authMode, setAuthMode] = useState<AuthMode | null>(null)
   const [signOutOpen, setSignOutOpen] = useState(false)
 
-  if (isLoading) return <p className={styles.loading}>Loading…</p>
+  if (isLoading) {
+    return (
+      <div className={styles.page}>
+        <PageHeader title="Profile" subtitle="Loading your Trove account…" />
+        <p className={styles.loading}>Loading…</p>
+      </div>
+    )
+  }
 
   const initial = userEmail?.trim().charAt(0).toUpperCase() ?? '?'
 
   return (
     <div className={styles.page}>
-      <header>
-        <h1>Profile</h1>
-        <p className={styles.subtitle}>
-          {isSignedIn ? 'Your Trove account' : 'Trying Trove as a guest'}
-        </p>
-      </header>
+      <PageHeader
+        title="Profile"
+        subtitle={isSignedIn ? 'Your Trove account' : 'Trying Trove as a guest'}
+      />
 
       <Card className={styles.card}>
         <CardContent className={styles.cardContent}>

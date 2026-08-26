@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
+import { PageHeader } from '@/components/PageHeader'
 import { canUseInAppCamera, createQrFrameScanner, extractTroveBinPath } from '@/lib/qrScan'
 import styles from './ScanPage.module.css'
 
@@ -104,6 +105,7 @@ export function ScanPage() {
   if (status === 'unavailable') {
     return (
       <div className={styles.page}>
+        <PageHeader title="Scan" subtitle="Scan a Trove QR label to open its bin." />
         <EmptyState
           title="Camera unavailable"
           description={error || 'Allow camera access to scan Trove QR labels inside the app.'}
@@ -120,14 +122,12 @@ export function ScanPage() {
 
   return (
     <div className={styles.page}>
-      <header>
-        <h1>Scan</h1>
-        <p className={styles.subtitle}>
-          {status === 'starting'
-            ? 'Starting camera…'
-            : 'Align a Trove QR label inside the frame.'}
-        </p>
-      </header>
+      <PageHeader
+        title="Scan"
+        subtitle={status === 'starting'
+          ? 'Starting camera…'
+          : 'Align a Trove QR label inside the frame.'}
+      />
       <div className={styles.viewfinder}>
         <video ref={videoRef} className={styles.video} muted playsInline autoPlay />
         <div className={styles.frame} aria-hidden />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { Icons } from '@/components/Icons'
+import { PageHeader } from '@/components/PageHeader'
 import { SearchField } from '@/components/SearchField'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { GUEST_SECOND_BIN_DESCRIPTION, GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
@@ -59,12 +60,11 @@ export function HomePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.hero}>
-        <h1 className={styles.title}>Trove</h1>
-        {showInventoryShortcuts ? (
-          <p className={styles.subtitle}>Know what you own. Know where it lives.</p>
-        ) : null}
-      </header>
+      <PageHeader
+        title="Trove"
+        subtitle={showInventoryShortcuts ? 'Know what you own. Know where it lives.' : undefined}
+        large
+      />
 
       {showInventoryShortcuts ? (
         <SearchField
