@@ -20,12 +20,6 @@
   font-size: var(--text-lg);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
 .section {
   display: flex;
   flex-direction: column;

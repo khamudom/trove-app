@@ -104,7 +104,7 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add bin' })).toBeInTheDocument()
+    expect(screen.getByRole('searchbox')).toBeInTheDocument()
   })
 
   it('shows the recent bins title when bins exist', () => {
@@ -130,6 +130,48 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows two recent bins with the add action in the section header', () => {
+    mocks.isSignedIn = true
+    mocks.bins = [
+      {
+        id: 'bin-1',
+        name: 'Toolbox',
+        tags: [],
+        createdAt: '2026-01-03T00:00:00.000Z',
+        updatedAt: '2026-01-03T00:00:00.000Z',
+      },
+      {
+        id: 'bin-2',
+        name: 'Camping gear',
+        tags: [],
+        createdAt: '2026-01-02T00:00:00.000Z',
+        updatedAt: '2026-01-02T00:00:00.000Z',
+      },
+      {
+        id: 'bin-3',
+        name: 'Holiday decor',
+        tags: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ]
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    const recentBinsHeading = screen.getByRole('heading', { name: 'Recent bins' })
+    const addBinButton = screen.getByRole('button', { name: 'Add bin' })
+
+    expect(addBinButton.parentElement).toBe(recentBinsHeading.parentElement)
+    expect(screen.getByRole('heading', { name: 'Toolbox' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Camping gear' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Holiday decor' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'All bins' })).not.toBeInTheDocument()
   })
 
   it('hides inventory shortcuts for signed-out users with no bins', () => {
