@@ -16,7 +16,7 @@ import styles from './HomePage.module.css'
 export function HomePage() {
   const navigate = useNavigate()
   const { repo, isSignedIn } = useAuth()
-  const { bins, refresh } = useBins()
+  const { bins, loading, refresh } = useBins()
   const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [authGateOpen, setAuthGateOpen] = useState(false)
@@ -102,7 +102,7 @@ export function HomePage() {
             ))}
           </div>
         </section>
-      ) : (
+      ) : !loading ? (
         <section className={styles.welcome} aria-labelledby="welcome-title">
           <div className={styles.welcomeIllustration} aria-hidden="true">
             <span className={`${styles.sparkle} ${styles.sparkleOne}`}>✦</span>
@@ -159,7 +159,7 @@ export function HomePage() {
             </li>
           </ol>
         </section>
-      )}
+      ) : null}
 
       <Dialog open={createOpen} heading="Create bin" onOpenChange={setCreateOpen}>
         <BinForm

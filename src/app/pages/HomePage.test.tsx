@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   signUp: vi.fn(),
   isSignedIn: false,
+  loading: false,
 }))
 
 vi.mock('@/features/auth/AuthContext', () => ({
@@ -44,7 +45,7 @@ vi.mock('@/features/auth/AuthContext', () => ({
 vi.mock('@/hooks/useBins', () => ({
   useBins: () => ({
     bins: mocks.bins,
-    loading: false,
+    loading: mocks.loading,
     refresh: mocks.refresh,
   }),
 }))
@@ -57,6 +58,7 @@ describe('HomePage', () => {
   beforeEach(() => {
     mocks.bins = []
     mocks.isSignedIn = false
+    mocks.loading = false
     mocks.listItems.mockReset()
     mocks.listItems.mockResolvedValue([])
     mocks.createBin.mockReset()
@@ -87,6 +89,22 @@ describe('HomePage', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'How Trove works' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create your first bin' })).toBeInTheDocument()
+  })
+
+  it('does not show the empty welcome state while signed-in bins are loading', () => {
+    mocks.isSignedIn = true
+    mocks.loading = true
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(
+      screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add bin' })).toBeInTheDocument()
   })
 
   it('shows the recent bins title when bins exist', () => {
