@@ -4,6 +4,7 @@ import { AlertDialog, Badge, Button, Dialog, Drawer, Toast } from '@khamudom/lum
 import { EmptyState } from '@/components/EmptyState'
 import { Icons } from '@/components/Icons'
 import { ItemCard } from '@/components/ItemCard'
+import { PageHeader } from '@/components/PageHeader'
 import { QRLabel } from '@/components/QRLabel'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { BinForm } from '@/features/bins/BinForm'
@@ -64,20 +65,24 @@ export function BinDetailPage() {
 
   return (
     <div className={styles.page}>
-      <button
-        type="button"
-        className={styles.back}
-        aria-label="Back to bins"
-        onClick={() => navigate('/bins')}
-      >
-        <Icons.Back className={styles.backIcon} />
-      </button>
+      <PageHeader
+        title={bin.name}
+        leading={(
+          <button
+            type="button"
+            className={styles.back}
+            aria-label="Back to bins"
+            onClick={() => navigate('/bins')}
+          >
+            <Icons.Back className={styles.backIcon} />
+          </button>
+        )}
+      />
 
       <div className={styles.hero}>
         {bin.previewImage && <img src={bin.previewImage} alt="" className={styles.preview} />}
         <div>
           <p className={styles.meta}>{[bin.category, bin.location].filter(Boolean).join(' · ')}</p>
-          <h1>{bin.name}</h1>
           {bin.description && <p className={styles.description}>{bin.description}</p>}
           {bin.tags.length > 0 && (
             <ul className={styles.tags}>

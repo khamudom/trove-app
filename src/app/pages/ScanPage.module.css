@@ -4,10 +4,6 @@
   gap: var(--space-6);
 }
 
-.subtitle {
-  color: var(--color-ink-muted);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

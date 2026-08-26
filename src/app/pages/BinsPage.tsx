@@ -4,6 +4,7 @@ import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Icons } from '@/components/Icons'
+import { PageHeader } from '@/components/PageHeader'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { GUEST_SECOND_BIN_DESCRIPTION, GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
 import { BinForm } from '@/features/bins/BinForm'
@@ -35,15 +36,13 @@ export function BinsPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Bins</h1>
-          <p className={styles.subtitle}>Your physical storage, organized.</p>
-        </div>
-        <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
+      <PageHeader
+        title="Bins"
+        subtitle="Your physical storage, organized."
+        action={<Button icon={<Icons.Plus />} onClick={requestCreateBin}>
           Add bin
-        </Button>
-      </header>
+        </Button>}
+      />
 
       {!loading && bins.length === 0 ? (
         <EmptyState
