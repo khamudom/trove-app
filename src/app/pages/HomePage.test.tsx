@@ -114,7 +114,7 @@ describe('HomePage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('hides bin shortcuts for signed-out users with no bins', () => {
+  it('hides inventory shortcuts for signed-out users with no bins', () => {
     render(
       <MemoryRouter>
         <HomePage />
@@ -123,6 +123,8 @@ describe('HomePage', () => {
 
     expect(screen.queryByRole('button', { name: 'Add bin' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'All bins' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    expect(screen.queryByText('Know what you own. Know where it lives.')).not.toBeInTheDocument()
   })
 
   it('starts the first bin from the welcome panel', async () => {
