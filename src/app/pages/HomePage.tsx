@@ -25,7 +25,7 @@ export function HomePage() {
     const recentIds = getRecentBinIds()
     const ordered = recentIds.map((id) => bins.find((bin) => bin.id === id)).filter(Boolean)
     const remainder = bins.filter((bin) => !recentIds.includes(bin.id))
-    return [...ordered, ...remainder].slice(0, 4) as typeof bins
+    return [...ordered, ...remainder].slice(0, 2) as typeof bins
   }, [bins])
 
   const [counts, setCounts] = useState<Record<string, number>>({})
@@ -74,19 +74,13 @@ export function HomePage() {
         />
       ) : null}
 
-      {showInventoryShortcuts ? (
-        <div className={styles.actions}>
-          <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
-            Add bin
-          </Button>
-          <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
-        </div>
-      ) : null}
-
       {recentBins.length > 0 ? (
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2>Recent bins</h2>
+            <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
+              Add bin
+            </Button>
           </div>
           <div className={styles.grid}>
             {recentBins.map((bin) => (
