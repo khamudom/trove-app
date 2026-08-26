@@ -114,16 +114,15 @@ describe('HomePage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('opens create bin for guests with no bins yet', async () => {
-    const user = userEvent.setup()
+  it('hides bin shortcuts for signed-out users with no bins', () => {
     render(
       <MemoryRouter>
         <HomePage />
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Add bin' }))
-    expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add bin' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'All bins' })).not.toBeInTheDocument()
   })
 
   it('starts the first bin from the welcome panel', async () => {
