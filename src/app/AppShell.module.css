@@ -5,7 +5,7 @@
 
 .mainColumn {
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .main {
@@ -16,7 +16,7 @@
 
 .viewport {
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .screen {
