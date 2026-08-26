@@ -68,12 +68,14 @@ export function HomePage() {
         onSubmit={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
       />
 
-      <div className={styles.actions}>
-        <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
-          Add bin
-        </Button>
-        <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
-      </div>
+      {isSignedIn || bins.length > 0 ? (
+        <div className={styles.actions}>
+          <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
+            Add bin
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('/bins')}>All bins</Button>
+        </div>
+      ) : null}
 
       {recentBins.length > 0 ? (
         <section className={styles.section}>
