@@ -114,17 +114,16 @@ export function HomePage() {
           </div>
 
           <div className={styles.welcomeCopy}>
-            <p className={styles.eyebrow}>Your story starts here</p>
+            <p className={styles.eyebrow}>Less searching. More living.</p>
             <h2 id="welcome-title" className={styles.welcomeTitle}>
-              Every little thing has a place in your story.
+              Everything you own. Right where you left it.
             </h2>
             <p className={styles.welcomeText}>
-              The holiday lights, your grandfather&apos;s tools, the camera waiting for your next
-              adventure—Trove remembers where they live, so you can spend less time searching and
-              more time making memories.
+              Trove turns closets, garages, and storage bins into one searchable home. Add what
+              matters, label the box, and find anything in seconds.
             </p>
             <Button icon={<Icons.Plus />} onClick={requestCreateBin}>
-              Start your first bin
+              Create your first bin
             </Button>
           </div>
 
@@ -132,22 +131,22 @@ export function HomePage() {
             <li>
               <span className={styles.stepNumber}>1</span>
               <div>
-                <h3>Give it a home</h3>
-                <p>Create a bin for the things you want to keep close.</p>
+                <h3>Pack it.</h3>
+                <p>Build a visual record as you put things away.</p>
               </div>
             </li>
             <li>
               <span className={styles.stepNumber}>2</span>
               <div>
-                <h3>Remember what&apos;s inside</h3>
-                <p>Add each treasure once. Trove keeps the list for you.</p>
+                <h3>Label it.</h3>
+                <p>Give every bin a scannable shortcut.</p>
               </div>
             </li>
             <li>
               <span className={styles.stepNumber}>3</span>
               <div>
-                <h3>Find it like magic</h3>
-                <p>Search, speak, or scan a label and know exactly where to look.</p>
+                <h3>Find it.</h3>
+                <p>Search, ask, or scan. There it is.</p>
               </div>
             </li>
           </ol>
