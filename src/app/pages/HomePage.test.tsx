@@ -75,6 +75,20 @@ describe('HomePage', () => {
     expect(screen.queryByRole('heading', { name: 'Recent bins' })).not.toBeInTheDocument()
   })
 
+  it('welcomes new users with the Trove story', () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Every little thing has a place in your story.' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'How Trove works' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start your first bin' })).toBeInTheDocument()
+  })
+
   it('shows the recent bins title when bins exist', () => {
     mocks.bins = [
       {
@@ -95,6 +109,9 @@ describe('HomePage', () => {
 
     expect(screen.getByRole('heading', { name: 'Recent bins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Toolbox' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Every little thing has a place in your story.' }),
+    ).not.toBeInTheDocument()
   })
 
   it('opens create bin for guests with no bins yet', async () => {
@@ -106,6 +123,18 @@ describe('HomePage', () => {
     )
 
     await user.click(screen.getByRole('button', { name: 'Add bin' }))
+    expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
+  })
+
+  it('starts the first bin from the welcome story', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Start your first bin' }))
     expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
   })
 
