@@ -15,7 +15,7 @@ body,
 
 html,
 body {
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 /* Keep the page behind Lumen overlays from scrolling (JS lock also applies). */
