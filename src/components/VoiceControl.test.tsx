@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
     },
     listening: false,
     listen: vi.fn(),
+    stop: vi.fn(),
     reset: vi.fn(),
     completeAddToBin: vi.fn(),
   },
@@ -44,6 +45,7 @@ describe('VoiceControl', () => {
     mocks.voice.result = null
     mocks.voice.listening = false
     mocks.voice.listen.mockReset()
+    mocks.voice.stop.mockReset()
     mocks.voice.reset.mockReset()
     mocks.voice.completeAddToBin.mockReset()
     mocks.deleteItem.mockReset()
@@ -58,6 +60,23 @@ describe('VoiceControl', () => {
 
     expect(screen.getByRole('button', { name: 'Add or find with voice' })).toBeInTheDocument()
     expect(screen.queryByText('Add items, find things, or open a bin')).not.toBeInTheDocument()
+  })
+
+  it('stops listening when the voice button is pressed again', () => {
+    mocks.voice.status = 'listening'
+    mocks.voice.listening = true
+
+    render(
+      <MemoryRouter>
+        <VoiceControl />
+      </MemoryRouter>,
+    )
+
+    screen.getByRole('button', { name: 'Stop voice input' }).click()
+
+    expect(mocks.voice.stop).toHaveBeenCalledOnce()
+    expect(mocks.voice.listen).not.toHaveBeenCalled()
+    expect(screen.getByText('Stop')).toBeInTheDocument()
   })
 
   it('shows an item-added toast after a unique voice add', () => {

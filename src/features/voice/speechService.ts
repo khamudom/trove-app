@@ -7,6 +7,7 @@ export interface SpeechService {
   isSupported(): boolean
   listen(onResult: (result: SpeechRecognitionResult) => void, onError: (message: string) => void): Promise<string>
   stop(): void
+  cancel(): void
 }
 
 type SpeechRecognitionCtor = new () => {
@@ -49,7 +50,7 @@ export class BrowserSpeechService implements SpeechService {
       return Promise.reject(new Error('Speech recognition unsupported'))
     }
 
-    this.stop()
+    this.cancel()
 
     return new Promise((resolve, reject) => {
       const recognition = new Ctor()
@@ -59,13 +60,13 @@ export class BrowserSpeechService implements SpeechService {
       recognition.maxAlternatives = 1
       recognition.continuous = false
 
-      let finalTranscript = ''
+      let latestTranscript = ''
 
       recognition.onresult = (event) => {
         const result = event.results[event.results.length - 1]
         const transcript = result[0].transcript.trim()
         onResult({ transcript, isFinal: result.isFinal })
-        if (result.isFinal) finalTranscript = transcript
+        latestTranscript = transcript
       }
 
       recognition.onerror = (event) => {
@@ -74,8 +75,8 @@ export class BrowserSpeechService implements SpeechService {
       }
 
       recognition.onend = () => {
-        this.recognition = null
-        if (finalTranscript) resolve(finalTranscript)
+        if (this.recognition === recognition) this.recognition = null
+        if (latestTranscript) resolve(latestTranscript)
         else reject(new Error('No speech detected'))
       }
 
@@ -84,6 +85,14 @@ export class BrowserSpeechService implements SpeechService {
   }
 
   stop(): void {
+    try {
+      this.recognition?.stop()
+    } catch {
+      // Recognition may already be stopping.
+    }
+  }
+
+  cancel(): void {
     const recognition = this.recognition
     this.recognition = null
     if (recognition) {
