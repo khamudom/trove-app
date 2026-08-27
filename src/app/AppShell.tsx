@@ -160,12 +160,20 @@ export function AppShell() {
     transition?.direction === 'forward' ? styles.enterFromRight : transition ? styles.enterFromLeft : undefined
   const exitClass =
     transition?.direction === 'forward' ? styles.exitToLeft : transition ? styles.exitToRight : undefined
+  const voiceControl = <VoiceControl placement={isMobile ? 'mobile' : 'desktop'} />
 
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar} aria-label="Desktop navigation">
         <nav className={styles.sidebarNav}>
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems.slice(0, 2).map(({ to, label, icon: Icon }) => (
+            <NavLink key={to} to={to} className={({ isActive }) => `${styles.sidebarLink} ${isActive ? styles.active : ''}`} end={to === '/'}>
+              <Icon className={styles.sidebarIcon} />
+              {label}
+            </NavLink>
+          ))}
+          {!isMobile && voiceControl}
+          {navItems.slice(2).map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => `${styles.sidebarLink} ${isActive ? styles.active : ''}`} end={to === '/'}>
               <Icon className={styles.sidebarIcon} />
               {label}
@@ -186,8 +194,7 @@ export function AppShell() {
             </PageScreen>
           </div>
         </main>
-        <BottomNavigation />
-        <VoiceControl />
+        <BottomNavigation voiceControl={isMobile ? voiceControl : null} />
       </div>
     </div>
   )
