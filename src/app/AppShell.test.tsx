@@ -76,6 +76,7 @@ function renderShell(
 describe('AppShell mobile page transitions', () => {
   beforeEach(() => {
     mockMatchMedia(true)
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   })
 
   it('puts voice in the former middle navigation slot', () => {
@@ -102,6 +103,18 @@ describe('AppShell mobile page transitions', () => {
     expect(document.querySelector(`.${styles.exitToLeft}`)).toBeTruthy()
     expect(screen.getByText('Bins page')).toBeInTheDocument()
     expect(screen.getByText('Home page')).toBeInTheDocument()
+  })
+
+  it('starts each page at the top when navigating', async () => {
+    const user = userEvent.setup()
+    const { nav } = renderShell()
+    const scrollTo = vi.mocked(window.scrollTo)
+    scrollTo.mockClear()
+
+    await user.click(within(nav()).getByRole('link', { name: 'Bins' }))
+
+    expect(scrollTo).toHaveBeenCalledOnce()
+    expect(scrollTo).toHaveBeenCalledWith(0, 0)
   })
 
   it('slides the first visit in from the left', async () => {
