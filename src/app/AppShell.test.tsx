@@ -8,7 +8,7 @@ import { AppShell } from './AppShell'
 import styles from './AppShell.module.css'
 
 vi.mock('@/components/VoiceControl', () => ({
-  VoiceControl: () => null,
+  VoiceControl: ({ placement }: { placement?: string }) => <button type="button">Voice {placement}</button>,
 }))
 
 function mockMatchMedia(matches: boolean) {
@@ -76,6 +76,19 @@ function renderShell(
 describe('AppShell mobile page transitions', () => {
   beforeEach(() => {
     mockMatchMedia(true)
+  })
+
+  it('puts voice in the former middle navigation slot', () => {
+    const { nav } = renderShell()
+
+    expect(Array.from(nav().children).map((item) => item.textContent)).toEqual([
+      'Home',
+      'Bins',
+      'Voice mobile',
+      'Search',
+      'Profile',
+    ])
+    expect(within(nav()).queryByRole('link', { name: 'Scan' })).not.toBeInTheDocument()
   })
 
   it('slides the first visit in from the right', async () => {

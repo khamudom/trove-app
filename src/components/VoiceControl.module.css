@@ -1,12 +1,7 @@
-.root {
-  pointer-events: none;
-}
-
 .panel {
-  pointer-events: auto;
   position: fixed;
   inset-inline: var(--space-4);
-  bottom: calc(var(--nav-height) + var(--space-4) + 4.5rem);
+  bottom: calc(var(--nav-height) + var(--space-4));
   z-index: 25;
   display: flex;
   flex-direction: column;
@@ -15,45 +10,58 @@
   margin-inline: auto;
 }
 
-.fab {
-  pointer-events: auto;
-  position: fixed;
-  right: var(--space-4);
-  bottom: calc(var(--nav-height) + var(--space-4));
-  z-index: 25;
-}
-
 .mic {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+
+.micMobile {
+  flex-direction: column;
+  gap: var(--space-1);
   padding: 0;
   border: none;
-  border-radius: var(--radius-full);
-  background: var(--color-accent);
-  color: var(--color-paper);
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
 }
 
 .mic:hover:not(:disabled) {
-  background: var(--color-accent-hover);
+  color: var(--color-accent);
 }
 
 .mic:focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
+  outline-offset: -2px;
+}
+
+.micDesktop {
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink-muted);
+  text-align: left;
+}
+
+.micDesktop:hover:not(:disabled) {
+  background: var(--color-accent-soft);
 }
 
 .micListening {
-  animation: voicePulse 1.2s ease-in-out infinite;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .micIcon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   display: block;
 }
 
@@ -66,18 +74,8 @@
     width: min(28rem, calc(100vw - var(--sidebar-width) - var(--space-8)));
   }
 
-  .fab {
-    bottom: var(--space-6);
-    right: var(--space-6);
-  }
-}
-
-@keyframes voicePulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent), var(--shadow-md);
-  }
-  50% {
-    box-shadow: 0 0 0 0.5rem color-mix(in srgb, var(--color-accent) 0%, transparent), var(--shadow-md);
+  .micIcon {
+    width: 1.125rem;
+    height: 1.125rem;
   }
 }
