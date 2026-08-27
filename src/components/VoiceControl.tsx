@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { Icons } from '@/components/Icons'
 import { VoiceCommandResult } from '@/components/VoiceCommandResult'
@@ -10,7 +11,7 @@ import styles from './VoiceControl.module.css'
 
 const VOICE_STATUS_DISMISS_MS = 3000
 
-export function VoiceControl() {
+export function VoiceControl({ placement = 'mobile' }: { placement?: 'mobile' | 'desktop' }) {
   const navigate = useNavigate()
   const { repo } = useAuth()
   const voice = useVoiceCommand(repo)
@@ -44,11 +45,15 @@ export function VoiceControl() {
     return () => window.clearTimeout(timer)
   }, [status, result, reset])
 
-  const micClass = [styles.mic, listening ? styles.micListening : ''].filter(Boolean).join(' ')
+  const micClass = [
+    styles.mic,
+    placement === 'desktop' ? styles.micDesktop : styles.micMobile,
+    listening ? styles.micListening : '',
+  ].filter(Boolean).join(' ')
 
   return (
-    <div className={styles.root}>
-      <div className={styles.panel}>
+    <>
+      {createPortal(<div className={styles.panel}>
         {result?.kind !== 'added_item' && (
           <VoiceStatus status={status} transcript={transcript} message={result?.message} />
         )}
@@ -62,19 +67,17 @@ export function VoiceControl() {
           }}
           onReset={reset}
         />
-      </div>
-
-      <div className={styles.fab}>
-        <button
-          type="button"
-          className={micClass}
-          aria-label="Add or find with voice"
-          aria-pressed={listening}
-          onClick={() => void listen()}
-        >
-          <Icons.Mic className={styles.micIcon} />
-        </button>
-      </div>
-    </div>
+      </div>, document.body)}
+      <button
+        type="button"
+        className={micClass}
+        aria-label="Add or find with voice"
+        aria-pressed={listening}
+        onClick={() => void listen()}
+      >
+        <Icons.Mic className={styles.micIcon} />
+        <span>Voice</span>
+      </button>
+    </>
   )
 }

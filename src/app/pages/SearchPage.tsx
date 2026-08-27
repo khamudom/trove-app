@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardTitle, CardDescription } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
+import { Icons } from '@/components/Icons'
 import { PageHeader } from '@/components/PageHeader'
 import { SearchField } from '@/components/SearchField'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -46,12 +47,17 @@ export function SearchPage() {
     <div className={styles.page}>
       <PageHeader title="Search" subtitle="Find anything across bins, items, tags, and locations." />
 
-      <SearchField
-        value={query}
-        onChange={setQuery}
-        onSubmit={() => runSearch(query)}
-        autoFocus
-      />
+      <div className={styles.searchRow}>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          onSubmit={() => runSearch(query)}
+          autoFocus
+        />
+        <Link to="/scan" className={styles.scanButton} aria-label="Scan a QR label">
+          <Icons.Scan className={styles.scanIcon} />
+        </Link>
+      </div>
 
       {searched && results.length === 0 && (
         <EmptyState
