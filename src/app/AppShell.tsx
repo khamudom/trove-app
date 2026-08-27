@@ -89,6 +89,10 @@ export function AppShell() {
 
   outletRef.current = outlet
 
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
       return
