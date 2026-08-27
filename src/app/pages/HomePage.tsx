@@ -4,7 +4,6 @@ import { Button, Dialog } from '@khamudom/lumen-ui-react'
 import { BinCard } from '@/components/BinCard'
 import { Icons } from '@/components/Icons'
 import { PageHeader } from '@/components/PageHeader'
-import { SearchField } from '@/components/SearchField'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { GUEST_SECOND_BIN_DESCRIPTION, GUEST_SECOND_BIN_TITLE } from '@/features/auth/guestBinLimit'
 import { BinForm } from '@/features/bins/BinForm'
@@ -18,7 +17,6 @@ export function HomePage() {
   const navigate = useNavigate()
   const { repo, isSignedIn } = useAuth()
   const { bins, loading, refresh } = useBins()
-  const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [authGateOpen, setAuthGateOpen] = useState(false)
 
@@ -65,14 +63,6 @@ export function HomePage() {
         subtitle={showInventoryShortcuts ? 'Know what you own. Know where it lives.' : undefined}
         large
       />
-
-      {showInventoryShortcuts ? (
-        <SearchField
-          value={query}
-          onChange={setQuery}
-          onSubmit={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
-        />
-      ) : null}
 
       {recentBins.length > 0 ? (
         <section className={styles.section}>
