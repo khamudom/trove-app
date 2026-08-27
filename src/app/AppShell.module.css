@@ -20,6 +20,7 @@
 }
 
 .screen {
+  position: relative;
   min-width: 0;
   background: var(--color-paper);
 }
@@ -58,45 +59,50 @@
   .exitToRight {
     animation: slideOutToRight 260ms ease both;
   }
+
+  .exitToLeft header,
+  .exitToRight header {
+    visibility: hidden;
+  }
 }
 
 @keyframes slideInFromRight {
   from {
-    transform: translateX(100%);
+    left: 100%;
   }
 
   to {
-    transform: translateX(0);
+    left: 0;
   }
 }
 
 @keyframes slideInFromLeft {
   from {
-    transform: translateX(-100%);
+    left: -100%;
   }
 
   to {
-    transform: translateX(0);
+    left: 0;
   }
 }
 
 @keyframes slideOutToLeft {
   from {
-    transform: translateX(0);
+    left: 0;
   }
 
   to {
-    transform: translateX(-100%);
+    left: -100%;
   }
 }
 
 @keyframes slideOutToRight {
   from {
-    transform: translateX(0);
+    left: 0;
   }
 
   to {
-    transform: translateX(100%);
+    left: 100%;
   }
 }
 
