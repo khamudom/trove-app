@@ -55,6 +55,14 @@ Icons.Mic = function MicIcon({ className }: { className?: string }) {
   )
 }
 
+Icons.Stop = function StopIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <rect x="7" y="7" width="10" height="10" rx="1" />
+    </svg>
+  )
+}
+
 Icons.Plus = function PlusIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>

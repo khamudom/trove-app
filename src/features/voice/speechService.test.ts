@@ -85,4 +85,23 @@ describe('BrowserSpeechService listen', () => {
     })
     expect(onError).not.toHaveBeenCalled()
   })
+
+  it('stops listening and resolves with the latest transcript', async () => {
+    const service = new BrowserSpeechService()
+    const promise = service.listen(vi.fn(), vi.fn())
+
+    instances[0].onresult?.({
+      resultIndex: 0,
+      results: [{ 0: { transcript: 'find my tent' }, isFinal: false, length: 1 }],
+    })
+
+    service.stop()
+
+    expect(instances[0].stop).toHaveBeenCalledOnce()
+    expect(instances[0].abort).not.toHaveBeenCalled()
+
+    instances[0].onend?.()
+
+    await expect(promise).resolves.toBe('find my tent')
+  })
 })
