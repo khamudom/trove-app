@@ -104,7 +104,7 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('searchbox')).toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   })
 
   it('shows the recent bins title when bins exist', () => {
@@ -130,6 +130,7 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   })
 
   it('shows two recent bins with the add action in the section header', () => {
