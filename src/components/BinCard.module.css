@@ -2,11 +2,18 @@
   display: block;
   text-decoration: none;
   color: inherit;
+  animation: fadeIn var(--motion-base) both;
 }
 
 .card {
   height: 100%;
   transition: transform var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
 }
 
 .link:hover .card {
