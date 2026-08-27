@@ -75,7 +75,7 @@ export function useVoiceCommand(repo: TroveRepository) {
     setTranscript('')
     setResult(null)
     setStatus('idle')
-    speechService.stop()
+    speechService.cancel()
   }, [])
 
   const listen = useCallback(async () => {
@@ -117,6 +117,10 @@ export function useVoiceCommand(repo: TroveRepository) {
     setStatus('done')
   }, [repo])
 
+  const stop = useCallback(() => {
+    speechService.stop()
+  }, [])
+
   return {
     status,
     transcript,
@@ -126,6 +130,6 @@ export function useVoiceCommand(repo: TroveRepository) {
     reset,
     executeParsed,
     completeAddToBin,
-    stop: () => speechService.stop(),
+    stop,
   }
 }

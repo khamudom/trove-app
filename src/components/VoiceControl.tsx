@@ -15,7 +15,7 @@ export function VoiceControl({ placement = 'mobile' }: { placement?: 'mobile' | 
   const navigate = useNavigate()
   const { repo } = useAuth()
   const voice = useVoiceCommand(repo)
-  const { result, reset, listen, listening, status, transcript, completeAddToBin } = voice
+  const { result, reset, listen, stop, listening, status, transcript, completeAddToBin } = voice
 
   useEffect(() => {
     if (result?.kind === 'search' && result.query) {
@@ -71,12 +71,14 @@ export function VoiceControl({ placement = 'mobile' }: { placement?: 'mobile' | 
       <button
         type="button"
         className={micClass}
-        aria-label="Add or find with voice"
+        aria-label={listening ? 'Stop voice input' : 'Add or find with voice'}
         aria-pressed={listening}
-        onClick={() => void listen()}
+        onClick={() => listening ? stop() : void listen()}
       >
-        <Icons.Mic className={styles.micIcon} />
-        <span>Voice</span>
+        {listening
+          ? <Icons.Stop className={styles.micIcon} />
+          : <Icons.Mic className={styles.micIcon} />}
+        <span>{listening ? 'Stop' : 'Voice'}</span>
       </button>
     </>
   )
