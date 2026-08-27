@@ -12,6 +12,11 @@ Object.defineProperty(window, 'localStorage', {
   configurable: true,
 })
 
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  configurable: true,
+})
+
 beforeEach(() => {
   store.clear()
 })
