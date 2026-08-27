@@ -4,6 +4,41 @@
   gap: var(--space-6);
 }
 
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.25rem;
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.scanButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-paper-elevated);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+
+.scanButton:hover {
+  background: var(--color-accent-soft);
+}
+
+.scanButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.scanIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .results {
   list-style: none;
   padding: 0;

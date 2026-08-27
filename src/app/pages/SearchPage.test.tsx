@@ -98,6 +98,18 @@ describe('SearchPage', () => {
     expect(mocks.search).toHaveBeenCalledTimes(1)
   })
 
+  it('opens the scanner from beside the search field', async () => {
+    const user = userEvent.setup()
+    renderSearchPage()
+
+    const searchbox = screen.getByRole('searchbox', { name: 'Search Trove' })
+    const scanButton = screen.getByRole('link', { name: 'Scan a QR label' })
+
+    expect(searchbox.parentElement?.parentElement?.parentElement).toContainElement(scanButton)
+    await user.click(scanButton)
+    expect(screen.getByText('Scan page')).toBeInTheDocument()
+  })
+
   it('loads results from the query string without remounting into a blank state', async () => {
     renderSearchPage('/search?q=tool')
 
