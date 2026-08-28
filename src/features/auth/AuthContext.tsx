@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { getSupabaseClient } from '@/lib/supabase'
 import { isSupabaseConfigured } from '@/lib/utils'
 import { createLocalRepository, createSupabaseRepository, migrateLocalToAccount } from '@/repositories'
@@ -9,11 +10,18 @@ interface AuthContextValue {
   isSignedIn: boolean
   isLoading: boolean
   userEmail?: string
+  displayName?: string
   repo: TroveRepository
   signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   migrateLocalData: () => Promise<void>
+}
+
+function displayNameFromUser(user: User | null | undefined): string | undefined {
+  const meta = user?.user_metadata?.display_name
+  if (typeof meta === 'string' && meta.trim()) return meta.trim()
+  return undefined
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -25,6 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(isConfigured)
   const [userEmail, setUserEmail] = useState<string>()
+  const [displayName, setDisplayName] = useState<string>()
+
+  const applyUser = (user: User | null | undefined) => {
+    setIsSignedIn(Boolean(user))
+    setUserEmail(user?.email ?? undefined)
+    setDisplayName(displayNameFromUser(user))
+  }
 
   useEffect(() => {
     const client = getSupabaseClient()
@@ -34,14 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     void client.auth.getSession().then(({ data }) => {
-      setIsSignedIn(Boolean(data.session))
-      setUserEmail(data.session?.user.email ?? undefined)
+      applyUser(data.session?.user ?? null)
       setIsLoading(false)
     })
 
     const { data: subscription } = client.auth.onAuthStateChange((_event, session) => {
-      setIsSignedIn(Boolean(session))
-      setUserEmail(session?.user.email ?? undefined)
+      applyUser(session?.user ?? null)
     })
 
     return () => subscription.subscription.unsubscribe()
@@ -55,8 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await client.auth.signUp({ email, password })
     if (error) throw error
     if (!data.session) return { needsConfirmation: true }
-    setIsSignedIn(true)
-    setUserEmail(data.session.user.email ?? email)
+    applyUser(data.session.user)
     await migrateLocalToAccount(localRepo, supabaseRepo!)
     return { needsConfirmation: false }
   }
@@ -64,17 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     const client = getSupabaseClient()
     if (!client) throw new Error("Accounts aren't available right now")
-    const { error } = await client.auth.signInWithPassword({ email, password })
+    const { data, error } = await client.auth.signInWithPassword({ email, password })
     if (error) throw error
-    setIsSignedIn(true)
+    applyUser(data.user)
     await migrateLocalToAccount(localRepo, supabaseRepo!)
   }
 
   const signOut = async () => {
     const client = getSupabaseClient()
     if (client) await client.auth.signOut()
-    setIsSignedIn(false)
-    setUserEmail(undefined)
+    applyUser(null)
   }
 
   const migrateLocalData = async () => {
@@ -87,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isSignedIn,
     isLoading,
     userEmail,
+    displayName,
     repo,
     signUp,
     signIn,

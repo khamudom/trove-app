@@ -11,6 +11,8 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { onInventoryChanged } from '@/lib/inventoryEvents'
 import { getRecentBinIds } from '@/repositories/localRepository'
 import { useBins } from '@/hooks/useBins'
+import type { Item } from '@/types'
+import { SignedInHome } from './SignedInHome'
 import styles from './HomePage.module.css'
 
 export function HomePage() {
@@ -24,14 +26,29 @@ export function HomePage() {
     const recentIds = getRecentBinIds()
     const ordered = recentIds.map((id) => bins.find((bin) => bin.id === id)).filter(Boolean)
     const remainder = bins.filter((bin) => !recentIds.includes(bin.id))
-    return [...ordered, ...remainder].slice(0, 2) as typeof bins
+    return [...ordered, ...remainder] as typeof bins
   }, [bins])
 
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [items, setItems] = useState<Item[]>([])
+  const [inventoryReady, setInventoryReady] = useState(false)
+
+  useEffect(() => {
+    setInventoryReady(false)
+  }, [repo, isSignedIn])
 
   useEffect(() => {
     let cancelled = false
     const loadCounts = () => {
+      if (isSignedIn) {
+        void Promise.all(bins.map((bin) => repo.listItems(bin.id))).then((lists) => {
+          if (cancelled) return
+          setItems(lists.flat())
+          setInventoryReady(true)
+        })
+        return
+      }
+
       void Promise.all(bins.map(async (bin) => [bin.id, (await repo.listItems(bin.id)).length] as const)).then((entries) => {
         if (!cancelled) setCounts(Object.fromEntries(entries))
       })
@@ -44,7 +61,7 @@ export function HomePage() {
       cancelled = true
       unsubscribe()
     }
-  }, [bins, repo])
+  }, [bins, repo, isSignedIn])
 
   const requestCreateBin = () => {
     if (!isSignedIn && bins.length >= 1) {
@@ -55,6 +72,36 @@ export function HomePage() {
   }
 
   const showInventoryShortcuts = isSignedIn || bins.length > 0
+
+  if (isSignedIn) {
+    return (
+      <div className={styles.page}>
+        <PageHeader
+          title="Trove"
+          large
+        />
+        <SignedInHome
+          bins={bins}
+          items={items}
+          recentBins={recentBins.slice(0, 8)}
+          loading={loading}
+          inventoryReady={inventoryReady}
+          onAddBin={requestCreateBin}
+        />
+        <Dialog open={createOpen} heading="Create bin" onOpenChange={setCreateOpen}>
+          <BinForm
+            submitLabel="Create bin"
+            onSubmit={async (values) => {
+              const bin = await repo.createBin(values)
+              await refresh()
+              setCreateOpen(false)
+              navigate(`/bins/${bin.id}`)
+            }}
+          />
+        </Dialog>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -73,7 +120,7 @@ export function HomePage() {
             </Button>
           </div>
           <div className={styles.grid}>
-            {recentBins.map((bin) => (
+            {recentBins.slice(0, 2).map((bin) => (
               <BinCard
                 key={bin.id}
                 id={bin.id}
