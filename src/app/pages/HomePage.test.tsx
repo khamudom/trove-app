@@ -21,10 +21,13 @@ const mocks = vi.hoisted(() => ({
   listItems: vi.fn(),
   createBin: vi.fn(),
   deleteItem: vi.fn(),
+  updateItem: vi.fn(),
   refresh: vi.fn(),
   signUp: vi.fn(),
   isSignedIn: false,
   loading: false,
+  userEmail: undefined as string | undefined,
+  displayName: undefined as string | undefined,
 }))
 
 vi.mock('@/features/auth/AuthContext', () => ({
@@ -32,10 +35,13 @@ vi.mock('@/features/auth/AuthContext', () => ({
     isConfigured: true,
     isSignedIn: mocks.isSignedIn,
     isLoading: false,
+    userEmail: mocks.userEmail,
+    displayName: mocks.displayName,
     repo: {
       listItems: mocks.listItems,
       createBin: mocks.createBin,
       deleteItem: mocks.deleteItem,
+      updateItem: mocks.updateItem,
     },
     signIn: vi.fn(),
     signUp: mocks.signUp,
@@ -59,10 +65,14 @@ describe('HomePage', () => {
     mocks.bins = []
     mocks.isSignedIn = false
     mocks.loading = false
+    mocks.userEmail = undefined
+    mocks.displayName = undefined
     mocks.listItems.mockReset()
     mocks.listItems.mockResolvedValue([])
     mocks.createBin.mockReset()
     mocks.deleteItem.mockReset()
+    mocks.updateItem.mockReset()
+    mocks.updateItem.mockResolvedValue({})
     mocks.refresh.mockReset()
     mocks.signUp.mockReset()
   })
@@ -101,6 +111,8 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
+    expect(screen.getByRole('heading', { name: 'Trove' })).toBeInTheDocument()
+    expect(screen.queryByText('Know what you own. Know where it lives.')).not.toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
@@ -134,7 +146,6 @@ describe('HomePage', () => {
   })
 
   it('shows two recent bins with the add action in the section header', () => {
-    mocks.isSignedIn = true
     mocks.bins = [
       {
         id: 'bin-1',
@@ -257,6 +268,7 @@ describe('HomePage', () => {
   it('lets signed-in users create another bin', async () => {
     const user = userEvent.setup()
     mocks.isSignedIn = true
+    mocks.userEmail = 'sam@example.com'
     mocks.bins = [
       {
         id: 'bin-1',
@@ -273,7 +285,131 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Add bin' }))
+    await user.click(await screen.findByRole('button', { name: 'Add bin' }))
     expect(screen.getByRole('heading', { name: 'Create bin' })).toBeInTheDocument()
+  })
+
+  it('personalizes the signed-in home from account inventory', async () => {
+    mocks.isSignedIn = true
+    mocks.displayName = 'Sam'
+    mocks.userEmail = 'sam@example.com'
+    mocks.bins = [
+      {
+        id: 'camera',
+        name: 'Camera Gear',
+        tags: [],
+        location: 'Hall closet',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-06-01T00:00:00.000Z',
+      },
+      {
+        id: 'bin-2',
+        name: 'Bin2',
+        tags: [],
+        location: 'Garage',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-20T00:00:00.000Z',
+      },
+      {
+        id: 'holiday',
+        name: 'Holiday',
+        tags: [],
+        location: 'Attic',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ]
+    mocks.listItems.mockImplementation(async (binId: string) => {
+      if (binId === 'camera') {
+        return [
+          {
+            id: 'sx70',
+            binId: 'camera',
+            name: 'Polaroid SX-70',
+            tags: [],
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-06-27T00:00:00.000Z',
+          },
+        ]
+      }
+      if (binId === 'bin-2') {
+        return [
+          {
+            id: 'ladder',
+            binId: 'bin-2',
+            name: 'Ladder',
+            description: 'Lent to Marcus',
+            tags: ['lent'],
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: '2026-08-06T00:00:00.000Z',
+          },
+        ]
+      }
+      return Array.from({ length: 23 }, (_, index) => ({
+        id: `ornament-${index}`,
+        binId: 'holiday',
+        name: `Ornament ${index + 1}`,
+        tags: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }))
+    })
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Trove' })).toBeInTheDocument()
+    expect(screen.queryByText('Know what you own. Know where it lives.')).not.toBeInTheDocument()
+    expect(await screen.findByText(/keeping track of/)).toBeInTheDocument()
+    expect(screen.getByText('25 things', { exact: false })).toBeInTheDocument()
+    expect(screen.getByText('3 bins', { exact: false })).toBeInTheDocument()
+    expect(screen.getByRole('searchbox', { name: 'Search Trove' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'From the archive' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Polaroid SX-70' })).toBeInTheDocument()
+    expect(screen.getByText('Bin2 has 1 item')).toBeInTheDocument()
+    expect(screen.getByText('Ladder lent to Marcus')).toBeInTheDocument()
+    expect(screen.getAllByText('Camera Gear').length).toBeGreaterThan(0)
+    expect(screen.getByText('Holiday')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('marks an archive item as still kept', async () => {
+    const user = userEvent.setup()
+    mocks.isSignedIn = true
+    mocks.userEmail = 'sam@example.com'
+    mocks.bins = [
+      {
+        id: 'camera',
+        name: 'Camera Gear',
+        tags: [],
+        location: 'Hall closet',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-06-01T00:00:00.000Z',
+      },
+    ]
+    mocks.listItems.mockResolvedValue([
+      {
+        id: 'sx70',
+        binId: 'camera',
+        name: 'Polaroid SX-70',
+        tags: [],
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-06-27T00:00:00.000Z',
+      },
+    ])
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    await user.click(await screen.findByRole('button', { name: 'Still keeping it' }))
+    expect(mocks.updateItem).toHaveBeenCalledWith('sx70', {})
   })
 })

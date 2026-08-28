@@ -41,7 +41,9 @@
 }
 
 .micDesktop {
+  justify-content: flex-start;
   gap: var(--space-3);
+  width: 100%;
   min-height: var(--touch-min);
   padding: 0 var(--space-4);
   border-radius: var(--radius-md);
