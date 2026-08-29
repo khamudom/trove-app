@@ -4,7 +4,8 @@ import { Icons } from '@/components/Icons'
 import { BrowserSpeechService, type SpeechService } from '@/features/voice/speechService'
 import { joinTags, parseTagsInput } from '@/lib/utils'
 import type { Item } from '@/types'
-import { parseItemVoiceInput } from './parseItemVoiceInput'
+import { extractItemVoiceInput } from './extractItemVoiceInput'
+import type { ParsedItemVoiceInput } from './parseItemVoiceInput'
 import { prepareItemImage } from './prepareItemImage'
 import styles from './ItemForm.module.css'
 
@@ -18,9 +19,16 @@ interface ItemFormProps {
     tags: string[]
   }) => Promise<void>
   speechService?: SpeechService
+  voiceInputExtractor?: (transcript: string) => Promise<ParsedItemVoiceInput>
 }
 
-export function ItemForm({ initial, submitLabel, onSubmit, speechService }: ItemFormProps) {
+export function ItemForm({
+  initial,
+  submitLabel,
+  onSubmit,
+  speechService,
+  voiceInputExtractor = extractItemVoiceInput,
+}: ItemFormProps) {
   const [name, setName] = useState(initial?.name ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [tags, setTags] = useState(joinTags(initial?.tags ?? []))
@@ -28,6 +36,7 @@ export function ItemForm({ initial, submitLabel, onSubmit, speechService }: Item
   const [loading, setLoading] = useState(false)
   const [photoLoading, setPhotoLoading] = useState(false)
   const [listening, setListening] = useState(false)
+  const [processingVoice, setProcessingVoice] = useState(false)
   const [voiceTranscript, setVoiceTranscript] = useState('')
   const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -78,13 +87,16 @@ export function ItemForm({ initial, submitLabel, onSubmit, speechService }: Item
         (result) => setVoiceTranscript(result.transcript),
         (error) => setMessage(error),
       )
-      const parsed = parseItemVoiceInput(transcript)
+      setListening(false)
+      setProcessingVoice(true)
+      setMessage('Filling in item details…')
+      const parsed = await voiceInputExtractor(transcript)
       if (parsed.name) setName(parsed.name)
       if (parsed.description) setDescription(parsed.description)
       if (parsed.tags) setTags(joinTags(parsed.tags))
 
       if (!parsed.name && !parsed.description && !parsed.tags) {
-        setMessage('Start with “add”, “description is”, or “tag it”.')
+        setMessage('Could not find item details. Try describing the item another way.')
       } else {
         setMessage('Item details added from voice.')
       }
@@ -92,6 +104,7 @@ export function ItemForm({ initial, submitLabel, onSubmit, speechService }: Item
       // The speech service reports a user-facing error.
     } finally {
       setListening(false)
+      setProcessingVoice(false)
     }
   }
 
@@ -125,14 +138,16 @@ export function ItemForm({ initial, submitLabel, onSubmit, speechService }: Item
         <button
           type="button"
           className={`${styles.option} ${listening ? styles.optionActive : ''}`}
-          disabled={!speech.isSupported()}
+          disabled={!speech.isSupported() || processingVoice}
           aria-pressed={listening}
           onClick={() => void handleVoice()}
         >
           {listening
             ? <Icons.Stop className={styles.optionIcon} />
             : <Icons.Mic className={styles.optionIcon} />}
-          <span>{listening ? 'Stop listening' : 'Add with voice'}</span>
+          <span>
+            {listening ? 'Stop listening' : processingVoice ? 'Filling details…' : 'Add with voice'}
+          </span>
         </button>
       </div>
 
@@ -146,7 +161,8 @@ export function ItemForm({ initial, submitLabel, onSubmit, speechService }: Item
       )}
 
       <p className={styles.voiceHint}>
-        Say “Add Superman comic book. Description is first edition. Tag it comic, collectible.”
+        Speak naturally. For example, “This is my first-edition Superman comic book for my
+        collectibles.”
       </p>
       {(voiceTranscript || message) && (
         <div className={styles.feedback} aria-live="polite">

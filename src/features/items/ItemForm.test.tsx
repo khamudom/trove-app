@@ -17,22 +17,31 @@ function createSpeechService(transcript: string): SpeechService {
 }
 
 describe('ItemForm', () => {
-  it('fills item details from structured voice input', async () => {
+  it('fills item details from natural voice input', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockResolvedValue(undefined)
+    const voiceInputExtractor = vi.fn().mockResolvedValue({
+      name: 'Superman comic book',
+      description: 'first edition',
+      tags: ['comic', 'collectible'],
+    })
 
     render(
       <ItemForm
         submitLabel="Add item"
         onSubmit={onSubmit}
         speechService={createSpeechService(
-          'Add Superman comic book. Description is first edition. Tag it comic, collectible.',
+          'This is my first-edition Superman comic book for my collectibles.',
         )}
+        voiceInputExtractor={voiceInputExtractor}
       />,
     )
 
     await user.click(screen.getByRole('button', { name: 'Add with voice' }))
 
+    expect(voiceInputExtractor).toHaveBeenCalledWith(
+      'This is my first-edition Superman comic book for my collectibles.',
+    )
     expect(screen.getByRole('textbox', { name: /Name/ })).toHaveValue('Superman comic book')
     expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('first edition')
     expect(screen.getByRole('textbox', { name: 'Tags' })).toHaveValue('comic, collectible')
