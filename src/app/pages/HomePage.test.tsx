@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from './HomePage'
 import {
@@ -59,6 +59,11 @@ vi.mock('@/hooks/useBins', () => ({
 vi.mock('@/repositories/localRepository', () => ({
   getRecentBinIds: () => [],
 }))
+
+function CurrentLocation() {
+  const location = useLocation()
+  return <span data-testid="current-location">{location.pathname}{location.search}</span>
+}
 
 describe('HomePage', () => {
   beforeEach(() => {
@@ -376,6 +381,23 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('opens home search results on the search page when Enter is pressed', async () => {
+    const user = userEvent.setup()
+    mocks.isSignedIn = true
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+        <CurrentLocation />
+      </MemoryRouter>,
+    )
+
+    const searchbox = await screen.findByRole('searchbox', { name: 'Search Trove' })
+    await user.type(searchbox, '  bow ties  {Enter}')
+
+    expect(screen.getByTestId('current-location')).toHaveTextContent('/search?q=bow%20ties')
   })
 
   it('marks an archive item as still kept', async () => {
