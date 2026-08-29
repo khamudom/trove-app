@@ -13,6 +13,7 @@ interface SearchFieldProps {
   placeholder?: string
   autoFocus?: boolean
   id?: string
+  tone?: 'default' | 'accent'
 }
 
 function getIsMobile() {
@@ -26,6 +27,7 @@ export function SearchField({
   placeholder = 'Search anything…',
   autoFocus = false,
   id = 'global-search',
+  tone = 'default',
 }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [hasFocusWithin, setHasFocusWithin] = useState(false)
@@ -55,7 +57,7 @@ export function SearchField({
   return (
     <div className={styles.wrap}>
       <form
-        className={styles.field}
+        className={`${styles.field} ${tone === 'accent' ? styles.accent : ''}`}
         role="search"
         onFocusCapture={() => setHasFocusWithin(true)}
         onBlurCapture={(event) => {

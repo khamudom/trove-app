@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from './HomePage'
 import {
@@ -8,27 +8,35 @@ import {
   GUEST_SECOND_BIN_TITLE,
 } from '@/features/auth/guestBinLimit'
 
-const mocks = vi.hoisted(() => ({
-  bins: [] as Array<{
-    id: string
-    name: string
-    category?: string
-    tags: string[]
-    location?: string
-    createdAt: string
-    updatedAt: string
-  }>,
-  listItems: vi.fn(),
-  createBin: vi.fn(),
-  deleteItem: vi.fn(),
-  updateItem: vi.fn(),
-  refresh: vi.fn(),
-  signUp: vi.fn(),
-  isSignedIn: false,
-  loading: false,
-  userEmail: undefined as string | undefined,
-  displayName: undefined as string | undefined,
-}))
+const mocks = vi.hoisted(() => {
+  const listItems = vi.fn()
+  const createBin = vi.fn()
+  const deleteItem = vi.fn()
+  const updateItem = vi.fn()
+
+  return {
+    bins: [] as Array<{
+      id: string
+      name: string
+      category?: string
+      tags: string[]
+      location?: string
+      createdAt: string
+      updatedAt: string
+    }>,
+    listItems,
+    createBin,
+    deleteItem,
+    updateItem,
+    repo: { listItems, createBin, deleteItem, updateItem },
+    refresh: vi.fn(),
+    signUp: vi.fn(),
+    isSignedIn: false,
+    loading: false,
+    userEmail: undefined as string | undefined,
+    displayName: undefined as string | undefined,
+  }
+})
 
 vi.mock('@/features/auth/AuthContext', () => ({
   useAuth: () => ({
@@ -37,12 +45,7 @@ vi.mock('@/features/auth/AuthContext', () => ({
     isLoading: false,
     userEmail: mocks.userEmail,
     displayName: mocks.displayName,
-    repo: {
-      listItems: mocks.listItems,
-      createBin: mocks.createBin,
-      deleteItem: mocks.deleteItem,
-      updateItem: mocks.updateItem,
-    },
+    repo: mocks.repo,
     signIn: vi.fn(),
     signUp: mocks.signUp,
   }),
@@ -59,6 +62,11 @@ vi.mock('@/hooks/useBins', () => ({
 vi.mock('@/repositories/localRepository', () => ({
   getRecentBinIds: () => [],
 }))
+
+function CurrentLocation() {
+  const location = useLocation()
+  return <span data-testid="current-location">{location.pathname}{location.search}</span>
+}
 
 describe('HomePage', () => {
   beforeEach(() => {
@@ -376,6 +384,24 @@ describe('HomePage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Everything you own. Right where you left it.' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('opens home search results on the search page when submitted', async () => {
+    const user = userEvent.setup()
+    mocks.isSignedIn = true
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+        <CurrentLocation />
+      </MemoryRouter>,
+    )
+
+    const searchbox = await screen.findByRole('searchbox', { name: 'Search Trove' })
+    await user.type(searchbox, '  bow ties  ')
+    fireEvent.submit(searchbox.closest('form')!)
+
+    expect(screen.getByTestId('current-location')).toHaveTextContent('/search?q=bow%20ties')
   })
 
   it('marks an archive item as still kept', async () => {
