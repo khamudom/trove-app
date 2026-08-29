@@ -37,6 +37,15 @@ Icons.Search = function SearchIcon({ className }: { className?: string }) {
   )
 }
 
+Icons.Enter = function EnterIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M20 5v6a4 4 0 0 1-4 4H5" />
+      <path d="m9 11-4 4 4 4" />
+    </svg>
+  )
+}
+
 Icons.Profile = function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
