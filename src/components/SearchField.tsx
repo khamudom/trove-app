@@ -32,6 +32,10 @@ export function SearchField({
   const hasValue = value.length > 0
   const canSubmit = value.trim().length > 0
   const showClearButton = hasFocusWithin && hasValue
+  const clearSearch = () => {
+    onChange('')
+    inputRef.current?.focus()
+  }
 
   useEffect(() => {
     if (!autoFocus) {
@@ -82,10 +86,11 @@ export function SearchField({
             className={styles.actionButton}
             type="button"
             aria-label="Clear search"
-            onClick={() => {
-              onChange('')
-              inputRef.current?.focus()
+            onPointerDown={(event) => {
+              event.preventDefault()
+              clearSearch()
             }}
+            onClick={clearSearch}
           >
             <Icons.Close className={styles.actionIcon} />
           </button>

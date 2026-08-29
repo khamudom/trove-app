@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SearchField } from './SearchField'
@@ -17,6 +18,11 @@ function mockMatchMedia(matches: boolean) {
       dispatchEvent: vi.fn(),
     })),
   })
+}
+
+function ControlledSearchField({ initialValue }: { initialValue: string }) {
+  const [value, setValue] = useState(initialValue)
+  return <SearchField value={value} onChange={setValue} />
 }
 
 describe('SearchField', () => {
@@ -86,6 +92,22 @@ describe('SearchField', () => {
 
     expect(onChange).toHaveBeenCalledWith('')
     expect(input).toHaveFocus()
+  })
+
+  it('clears before a mobile blur can replace the clear button', () => {
+    mockMatchMedia(true)
+    render(<ControlledSearchField initialValue="Document" />)
+
+    const input = screen.getByRole('searchbox', { name: 'Search Trove' })
+    fireEvent.focus(input)
+    const clearButton = screen.getByRole('button', { name: 'Clear search' })
+
+    fireEvent.pointerDown(clearButton)
+    fireEvent.blur(input, { relatedTarget: null })
+    fireEvent.click(clearButton)
+
+    expect(input).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'Submit search' })).toBeDisabled()
   })
 
   it('does not submit whitespace-only values', () => {
