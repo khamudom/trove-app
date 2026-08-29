@@ -88,7 +88,6 @@ export function SearchField({
             aria-label="Clear search"
             onPointerDown={(event) => {
               event.preventDefault()
-              clearSearch()
             }}
             onClick={clearSearch}
           >
