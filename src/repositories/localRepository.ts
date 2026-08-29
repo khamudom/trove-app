@@ -1,4 +1,5 @@
-import { createId, normalizeText, nowIso } from '@/lib/utils'
+import { searchInventory } from '@/features/search/searchInventory'
+import { createId, nowIso } from '@/lib/utils'
 import { GUEST_BIN_LIMIT_MESSAGE } from '@/features/auth/guestBinLimit'
 import type {
   Bin,
@@ -42,55 +43,6 @@ function purgeLegacyLocalStorage(): void {
 }
 
 purgeLegacyLocalStorage()
-
-function searchStore(store: Store, query: string): SearchResult[] {
-  const q = normalizeText(query)
-  if (!q) return []
-
-  const results: SearchResult[] = []
-  const seen = new Set<string>()
-
-  for (const item of store.items) {
-    const bin = store.bins.find((b) => b.id === item.binId)
-    if (!bin) continue
-    const fields = [item.name, item.description ?? '', ...item.tags].map(normalizeText)
-    if (fields.some((f) => f.includes(q))) {
-      const key = `item:${item.id}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        results.push({
-          type: 'item',
-          itemId: item.id,
-          binId: bin.id,
-          title: item.name,
-          subtitle: bin.name,
-          location: bin.location,
-          matchField: 'item',
-        })
-      }
-    }
-  }
-
-  for (const bin of store.bins) {
-    const fields = [bin.name, bin.description ?? '', bin.category ?? '', bin.location ?? '', ...bin.tags].map(normalizeText)
-    if (fields.some((f) => f.includes(q))) {
-      const key = `bin:${bin.id}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        results.push({
-          type: 'bin',
-          binId: bin.id,
-          title: bin.name,
-          subtitle: bin.category ?? 'Bin',
-          location: bin.location,
-          matchField: 'bin',
-        })
-      }
-    }
-  }
-
-  return results
-}
 
 export class LocalRepository implements TroveRepository {
   private getStore(): Store {
@@ -223,7 +175,8 @@ export class LocalRepository implements TroveRepository {
   }
 
   async search(query: string): Promise<SearchResult[]> {
-    return searchStore(this.getStore(), query)
+    const store = this.getStore()
+    return searchInventory(store.bins, store.items, query)
   }
 
   async exportSnapshot(): Promise<LocalSnapshot> {

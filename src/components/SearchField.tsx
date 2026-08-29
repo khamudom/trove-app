@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icons } from './Icons'
 import styles from './SearchField.module.css'
 
@@ -28,6 +28,14 @@ export function SearchField({
   id = 'global-search',
 }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [hasFocusWithin, setHasFocusWithin] = useState(false)
+  const hasValue = value.length > 0
+  const canSubmit = value.trim().length > 0
+  const showClearButton = hasFocusWithin && hasValue
+  const clearSearch = () => {
+    onChange('')
+    inputRef.current?.focus()
+  }
 
   useEffect(() => {
     if (!autoFocus) {
@@ -49,9 +57,17 @@ export function SearchField({
       <form
         className={styles.field}
         role="search"
+        onFocusCapture={() => setHasFocusWithin(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setHasFocusWithin(false)
+          }
+        }}
         onSubmit={(event) => {
           event.preventDefault()
-          onSubmit?.()
+          if (canSubmit) {
+            onSubmit?.()
+          }
         }}
       >
         <Icons.Search className={styles.searchIcon} />
@@ -63,16 +79,31 @@ export function SearchField({
           value={value}
           placeholder={placeholder}
           aria-label="Search Trove"
-          onChange={(event) => {
-            const nextValue = event.target.value
-            const wasCleared = value.length > 0 && nextValue.length === 0
-
-            onChange(nextValue)
-            if (wasCleared) {
-              inputRef.current?.focus({ preventScroll: true })
-            }
-          }}
+          onChange={(event) => onChange(event.target.value)}
         />
+        {showClearButton ? (
+          <button
+            className={styles.actionButton}
+            type="button"
+            aria-label="Clear search"
+            onPointerDown={(event) => {
+              event.preventDefault()
+              clearSearch()
+            }}
+            onClick={clearSearch}
+          >
+            <Icons.Close className={styles.actionIcon} />
+          </button>
+        ) : (
+          <button
+            className={styles.actionButton}
+            type="submit"
+            aria-label="Submit search"
+            disabled={!canSubmit}
+          >
+            <Icons.Enter className={styles.actionIcon} />
+          </button>
+        )}
       </form>
     </div>
   )
