@@ -101,7 +101,7 @@ export function SearchField({
             aria-label="Submit search"
             disabled={!canSubmit}
           >
-            <Icons.Search className={styles.actionIcon} />
+            <Icons.Enter className={styles.actionIcon} />
           </button>
         )}
       </form>
