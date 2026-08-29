@@ -115,4 +115,23 @@ describe('ScanPage', () => {
     expect(await screen.findByRole('heading', { name: 'Camera unavailable' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Browse bins' })).toBeInTheDocument()
   })
+
+  it('returns to search when the scanner is closed', async () => {
+    const user = userEvent.setup()
+    Object.defineProperty(window, 'isSecureContext', { configurable: true, value: false })
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: undefined,
+    })
+
+    render(
+      <MemoryRouter>
+        <ScanPage />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Close scanner' }))
+
+    expect(navigate).toHaveBeenCalledWith('/search')
+  })
 })
