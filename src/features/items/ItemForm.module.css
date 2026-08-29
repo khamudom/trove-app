@@ -3,3 +3,101 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+.addOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-paper-elevated);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.option:hover:not(:disabled),
+.optionActive {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.optionIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.photoPreview {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-paper);
+}
+
+.photoPreview img {
+  width: 100%;
+  max-height: 12rem;
+  object-fit: cover;
+}
+
+.removePhoto {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(31, 28, 24, 0.8);
+  color: white;
+  font-size: var(--text-sm);
+}
+
+.voiceHint,
+.feedback {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.voiceHint {
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+}
+
+@media (max-width: 380px) {
+  .addOptions {
+    grid-template-columns: 1fr;
+  }
+}
