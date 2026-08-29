@@ -51,6 +51,7 @@ async function seedSearchFixtures() {
   const bin = await repo.createBin({ name: 'Toolbox', category: 'Tools', tags: ['tools'] })
   await repo.createItem({ binId: bin.id, name: 'Hammer', tags: ['tool', 'hand tool'] })
   await repo.createItem({ binId: bin.id, name: 'Cordless drill', tags: ['tool', 'power tool'] })
+  await repo.createItem({ binId: bin.id, name: 'Bow ties', tags: ['formal wear'] })
   return repo
 }
 
@@ -96,6 +97,17 @@ describe('SearchPage', () => {
     expect(screen.getByRole('heading', { name: 'Hammer' })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { name: 'Search' })).toHaveLength(1)
     expect(mocks.search).toHaveBeenCalledTimes(1)
+  })
+
+  it('finds items from a natural-language question', async () => {
+    const user = userEvent.setup()
+    renderSearchPage()
+
+    await user.type(screen.getByRole('searchbox', { name: 'Search Trove' }), 'Where is my bow ties?')
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByRole('heading', { name: 'Bow ties' })).toBeInTheDocument()
+    expect(screen.getByText('Toolbox')).toBeInTheDocument()
   })
 
   it('opens the scanner from beside the search field', async () => {
