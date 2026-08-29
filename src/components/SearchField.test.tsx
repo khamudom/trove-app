@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { useState } from 'react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SearchField } from './SearchField'
 
@@ -65,5 +66,25 @@ describe('SearchField', () => {
     vi.runAllTimers()
 
     expect(screen.getByRole('searchbox', { name: 'Search Trove' })).not.toHaveFocus()
+  })
+
+  it('restores focus when a populated search is cleared', () => {
+    function ControlledSearchField() {
+      const [value, setValue] = useState('Document')
+      return <SearchField value={value} onChange={setValue} />
+    }
+
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+    render(<ControlledSearchField />)
+    const searchbox = screen.getByRole('searchbox', { name: 'Search Trove' })
+
+    searchbox.blur()
+    fireEvent.change(searchbox, { target: { value: '' } })
+
+    expect(searchbox).toHaveValue('')
+    expect(searchbox).toHaveFocus()
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true })
+
+    focus.mockRestore()
   })
 })

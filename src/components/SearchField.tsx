@@ -63,7 +63,15 @@ export function SearchField({
           value={value}
           placeholder={placeholder}
           aria-label="Search Trove"
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => {
+            const nextValue = event.target.value
+            const wasCleared = value.length > 0 && nextValue.length === 0
+
+            onChange(nextValue)
+            if (wasCleared) {
+              inputRef.current?.focus({ preventScroll: true })
+            }
+          }}
         />
       </form>
     </div>
