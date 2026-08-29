@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SearchField } from './SearchField'
 
@@ -99,7 +99,7 @@ describe('SearchField', () => {
     render(<ControlledSearchField initialValue="Document" />)
 
     const input = screen.getByRole('searchbox', { name: 'Search Trove' })
-    fireEvent.focus(input)
+    act(() => input.focus())
     const clearButton = screen.getByRole('button', { name: 'Clear search' })
 
     fireEvent.pointerDown(clearButton)
