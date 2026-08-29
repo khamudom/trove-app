@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icons } from './Icons'
 import styles from './SearchField.module.css'
 
@@ -28,6 +28,10 @@ export function SearchField({
   id = 'global-search',
 }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [hasFocusWithin, setHasFocusWithin] = useState(false)
+  const hasValue = value.length > 0
+  const canSubmit = value.trim().length > 0
+  const showClearButton = hasFocusWithin && hasValue
 
   useEffect(() => {
     if (!autoFocus) {
@@ -49,9 +53,17 @@ export function SearchField({
       <form
         className={styles.field}
         role="search"
+        onFocusCapture={() => setHasFocusWithin(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setHasFocusWithin(false)
+          }
+        }}
         onSubmit={(event) => {
           event.preventDefault()
-          onSubmit?.()
+          if (canSubmit) {
+            onSubmit?.()
+          }
         }}
       >
         <Icons.Search className={styles.searchIcon} />
@@ -65,6 +77,28 @@ export function SearchField({
           aria-label="Search Trove"
           onChange={(event) => onChange(event.target.value)}
         />
+        {showClearButton ? (
+          <button
+            className={styles.actionButton}
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              onChange('')
+              inputRef.current?.focus()
+            }}
+          >
+            <Icons.Close className={styles.actionIcon} />
+          </button>
+        ) : (
+          <button
+            className={styles.actionButton}
+            type="submit"
+            aria-label="Submit search"
+            disabled={!canSubmit}
+          >
+            <Icons.Search className={styles.actionIcon} />
+          </button>
+        )}
       </form>
     </div>
   )
