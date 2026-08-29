@@ -94,7 +94,7 @@ describe('SearchField', () => {
     expect(input).toHaveFocus()
   })
 
-  it('clears before a mobile blur can replace the clear button', () => {
+  it('keeps mobile input focused while clearing', () => {
     mockMatchMedia(true)
     render(<ControlledSearchField initialValue="Document" />)
 
@@ -103,10 +103,13 @@ describe('SearchField', () => {
     const clearButton = screen.getByRole('button', { name: 'Clear search' })
 
     fireEvent.pointerDown(clearButton)
-    fireEvent.blur(input, { relatedTarget: null })
+    expect(input).toHaveFocus()
+    expect(input).toHaveValue('Document')
+
     fireEvent.click(clearButton)
 
     expect(input).toHaveValue('')
+    expect(input).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Submit search' })).toBeDisabled()
   })
 
