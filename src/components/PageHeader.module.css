@@ -12,6 +12,7 @@
   margin: 0 auto;
   padding: var(--space-6) var(--space-4) var(--space-4);
   background: var(--color-paper);
+  transition: padding var(--motion-base), box-shadow var(--motion-base);
 }
 
 .copy {
@@ -27,6 +28,7 @@
   font-size: var(--text-3xl);
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: font-size var(--motion-base);
 }
 
 .subtitle {
@@ -34,11 +36,33 @@
   color: var(--color-ink-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: font-size var(--motion-base);
 }
 
 .leading,
 .action {
   flex: none;
+  transform-origin: top;
+  transition: transform var(--motion-base);
+}
+
+.compact {
+  padding-top: calc(var(--space-6) * 0.7);
+  padding-bottom: calc(var(--space-4) * 0.7);
+  box-shadow: var(--shadow-sm);
+}
+
+.compact .copy h1 {
+  font-size: calc(var(--text-3xl) * 0.7);
+}
+
+.compact .subtitle {
+  font-size: calc(var(--text-base) * 0.7);
+}
+
+.compact .leading,
+.compact .action {
+  transform: scale(0.7);
 }
 
 .standalone {
@@ -74,6 +98,14 @@
   font-size: var(--text-lg);
 }
 
+.header.large.compact h1 {
+  font-size: calc(clamp(var(--text-3xl), 8vw, 3.5rem) * 0.7);
+}
+
+.header.large.compact .subtitle {
+  font-size: calc(var(--text-lg) * 0.7);
+}
+
 .spacer.large {
   height: calc(
     var(--header-top-offset)
@@ -102,6 +134,10 @@
     left: var(--sidebar-width);
     width: min(calc(100% - var(--sidebar-width)), var(--content-max));
     padding-top: var(--space-10);
+  }
+
+  .header.compact {
+    padding-top: calc(var(--space-10) * 0.7);
   }
 
   .header.standalone {
