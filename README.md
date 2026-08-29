@@ -22,7 +22,7 @@ You know you own it — but where did you put it? Trove creates a searchable dig
 - Supabase (optional account-backed persistence)
 - CSS Modules + design tokens
 - PWA via `vite-plugin-pwa`
-- Browser Speech Recognition (no LLM)
+- Browser Speech Recognition with GPT-5 nano field extraction
 
 ## Architecture
 
@@ -87,12 +87,23 @@ The migrations create:
 
 ## Voice commands
 
-Deterministic parser — no LLM:
+Natural item dictation uses the `parse-item-voice` Supabase Edge Function to extract a name,
+description, and tags. If the function is unavailable, the deterministic keyword parser remains
+available:
 
 - “Add hammer to the toolbox”
 - “Where did I put the hammer?”
 - “What is in Camping Gear?”
 - “Show me the toolbox”
+
+Deploy and configure the item extraction function:
+
+```bash
+supabase secrets set OPENAI_API_KEY=your-openai-api-key
+supabase functions deploy parse-item-voice
+```
+
+The OpenAI key is stored only as an Edge Function secret and must never use a `VITE_` prefix.
 
 ## PWA
 
