@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import styles from './PageHeader.module.css'
+
+const COMPACT_SCROLL_OFFSET = 24
 
 type PageHeaderProps = {
   title: string
@@ -18,13 +20,25 @@ export function PageHeader({
   large = false,
   standalone = false,
 }: PageHeaderProps) {
+  const [compact, setCompact] = useState(false)
   const sizeClass = large ? styles.large : ''
   const subtitleClass = subtitle ? styles.withSubtitle : ''
   const standaloneClass = standalone ? styles.standalone : ''
 
+  useEffect(() => {
+    const updateCompactState = () => setCompact(window.scrollY > COMPACT_SCROLL_OFFSET)
+
+    updateCompactState()
+    window.addEventListener('scroll', updateCompactState, { passive: true })
+
+    return () => window.removeEventListener('scroll', updateCompactState)
+  }, [])
+
   return (
     <>
-      <header className={`${styles.header} ${sizeClass} ${standaloneClass}`}>
+      <header
+        className={`${styles.header} ${sizeClass} ${standaloneClass} ${compact ? styles.compact : ''}`}
+      >
         {leading ? <div className={styles.leading}>{leading}</div> : null}
         <div className={styles.copy}>
           <h1>{title}</h1>
