@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Icons } from '@/components/Icons'
+import { SearchField } from '@/components/SearchField'
 import { useAuth } from '@/features/auth/AuthContext'
 import {
   HOME_TIPS,
@@ -79,32 +80,14 @@ export function SignedInHome({
         <strong>{model.binCount} {binLabel}</strong>.
       </p>
 
-      <form
-        className={styles.search}
-        role="search"
-        onSubmit={(event) => {
-          event.preventDefault()
-          runSearch(query)
-        }}
-      >
-        <Icons.Search className={styles.searchIcon} />
-        <div className={styles.searchField}>
-          <input
-            id="home-search"
-            className={styles.searchInput}
-            type="search"
-            value={query}
-            aria-label="Search Trove"
-            placeholder={model.searchExample ? '' : 'Where is my…'}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          {!query && model.searchExample ? (
-            <span className={styles.searchOverlay} aria-hidden>
-              Where is my <em>{model.searchExample}</em>...
-            </span>
-          ) : null}
-        </div>
-      </form>
+      <SearchField
+        id="home-search"
+        value={query}
+        onChange={setQuery}
+        onSubmit={() => runSearch(query)}
+        placeholder={model.searchExample ? `Where is my ${model.searchExample}...` : 'Where is my…'}
+        tone="accent"
+      />
 
       {model.archive ? (
         <section className={styles.section} aria-labelledby="archive-heading">
