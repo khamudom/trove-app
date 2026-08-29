@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '@/lib/supabase'
-import { createId, normalizeText, nowIso } from '@/lib/utils'
+import { searchInventory } from '@/features/search/searchInventory'
+import { createId, nowIso } from '@/lib/utils'
 import type {
   Bin,
   BinWithItems,
@@ -41,6 +42,9 @@ type ItemRow = {
   updated_at: string
 }
 
+type SearchBinRow = Pick<BinRow, 'id' | 'name' | 'description' | 'category' | 'tags' | 'location'>
+type SearchItemRow = Pick<ItemRow, 'id' | 'bin_id' | 'name' | 'description' | 'tags'>
+
 function mapBin(row: BinRow): Bin {
   return {
     id: row.id,
@@ -67,54 +71,6 @@ function mapItem(row: ItemRow): Item {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
-}
-
-function searchRows(bins: Bin[], items: Item[], query: string): SearchResult[] {
-  const q = normalizeText(query)
-  if (!q) return []
-  const results: SearchResult[] = []
-  const seen = new Set<string>()
-
-  for (const item of items) {
-    const bin = bins.find((b) => b.id === item.binId)
-    if (!bin) continue
-    const fields = [item.name, item.description ?? '', ...item.tags].map(normalizeText)
-    if (fields.some((f) => f.includes(q))) {
-      const key = `item:${item.id}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        results.push({
-          type: 'item',
-          itemId: item.id,
-          binId: bin.id,
-          title: item.name,
-          subtitle: bin.name,
-          location: bin.location,
-          matchField: 'item',
-        })
-      }
-    }
-  }
-
-  for (const bin of bins) {
-    const fields = [bin.name, bin.description ?? '', bin.category ?? '', bin.location ?? '', ...bin.tags].map(normalizeText)
-    if (fields.some((f) => f.includes(q))) {
-      const key = `bin:${bin.id}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        results.push({
-          type: 'bin',
-          binId: bin.id,
-          title: bin.name,
-          subtitle: bin.category ?? 'Bin',
-          location: bin.location,
-          matchField: 'bin',
-        })
-      }
-    }
-  }
-
-  return results
 }
 
 export class SupabaseRepository implements TroveRepository {
@@ -228,11 +184,32 @@ export class SupabaseRepository implements TroveRepository {
   }
 
   async search(query: string): Promise<SearchResult[]> {
-    const bins = await this.listBins()
+    if (!query.trim()) return []
+
     const client = this.requireClient()
-    const { data, error } = await client.from('items').select('*')
-    if (error) throw error
-    return searchRows(bins, (data as ItemRow[]).map(mapItem), query)
+    const [binsResponse, itemsResponse] = await Promise.all([
+      client.from('bins').select('id, name, description, category, tags, location'),
+      client.from('items').select('id, bin_id, name, description, tags'),
+    ])
+    if (binsResponse.error) throw binsResponse.error
+    if (itemsResponse.error) throw itemsResponse.error
+
+    const bins = (binsResponse.data as SearchBinRow[]).map((bin) => ({
+      id: bin.id,
+      name: bin.name,
+      description: bin.description ?? undefined,
+      category: bin.category ?? undefined,
+      tags: bin.tags ?? [],
+      location: bin.location ?? undefined,
+    }))
+    const items = (itemsResponse.data as SearchItemRow[]).map((item) => ({
+      id: item.id,
+      binId: item.bin_id,
+      name: item.name,
+      description: item.description ?? undefined,
+      tags: item.tags ?? [],
+    }))
+    return searchInventory(bins, items, query)
   }
 
   async exportSnapshot(): Promise<LocalSnapshot> {
