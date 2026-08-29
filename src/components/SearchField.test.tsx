@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SearchField } from './SearchField'
 
@@ -65,5 +65,37 @@ describe('SearchField', () => {
     vi.runAllTimers()
 
     expect(screen.getByRole('searchbox', { name: 'Search Trove' })).not.toHaveFocus()
+  })
+
+  it('disables submit when empty and shows clear while editing a value', () => {
+    mockMatchMedia(false)
+    const onChange = vi.fn()
+    const onSubmit = vi.fn()
+    const { rerender } = render(
+      <SearchField value="" onChange={onChange} onSubmit={onSubmit} />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Submit search' })).toBeDisabled()
+
+    rerender(<SearchField value="bow ties" onChange={onChange} onSubmit={onSubmit} />)
+    expect(screen.getByRole('button', { name: 'Submit search' })).toBeEnabled()
+
+    const input = screen.getByRole('searchbox', { name: 'Search Trove' })
+    fireEvent.focus(input)
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
+
+    expect(onChange).toHaveBeenCalledWith('')
+    expect(input).toHaveFocus()
+  })
+
+  it('does not submit whitespace-only values', () => {
+    mockMatchMedia(false)
+    const onSubmit = vi.fn()
+    render(<SearchField value="   " onChange={() => undefined} onSubmit={onSubmit} />)
+
+    fireEvent.submit(screen.getByRole('search'))
+
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Submit search' })).toBeDisabled()
   })
 })
