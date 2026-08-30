@@ -123,3 +123,24 @@ Icons.Camera = function CameraIcon({ className }: { className?: string }) {
     </svg>
   )
 }
+
+Icons.Eye = function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="2.75" />
+    </svg>
+  )
+}
+
+Icons.EyeOff = function EyeOffIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M3 3l18 18" />
+      <path d="M10.6 10.6A2.75 2.75 0 0 0 12 15.25a2.75 2.75 0 0 0 1.4-.65" />
+      <path d="M6.7 6.7C4.5 8.1 3 10 2.5 12s3.5 6.5 9.5 6.5c1.6 0 3-.35 4.2-.95" />
+      <path d="M17.9 14.1c1.4-1.1 2.4-2.5 3.1-3.6" />
+      <path d="M9.9 5.55A10.2 10.2 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17.7 17.7 0 0 1-2.2 3.1" />
+    </svg>
+  )
+}

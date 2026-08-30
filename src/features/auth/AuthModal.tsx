@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, AlertDescription, Button, Dialog, Input } from '@khamudom/lumen-ui-react'
 import { useAuth } from './AuthContext'
+import { PasswordInput } from './PasswordInput'
 import styles from './AuthModal.module.css'
 
 export type AuthMode = 'sign-in' | 'sign-up'
@@ -102,9 +103,8 @@ export function AuthModal({
             required
             onChange={(event) => setEmail(event.target.value)}
           />
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
             value={password}
             required
