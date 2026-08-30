@@ -33,7 +33,7 @@ describe('AuthModal', () => {
     render(<AuthModal open initialMode="sign-in" onClose={onClose} onSuccess={onSuccess} />)
 
     await user.type(screen.getByLabelText(/email/i), 'you@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'secret1')
+    await user.type(screen.getByLabelText(/^Password/, { selector: 'input' }), 'secret1')
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(mocks.signIn).toHaveBeenCalledWith('you@example.com', 'secret1')
@@ -49,7 +49,7 @@ describe('AuthModal', () => {
     render(<AuthModal open initialMode="sign-up" onClose={() => {}} onSuccess={onSuccess} />)
 
     await user.type(screen.getByLabelText(/email/i), 'you@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'secret1')
+    await user.type(screen.getByLabelText(/^Password/, { selector: 'input' }), 'secret1')
     await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     expect(await screen.findByText(/We sent a confirmation link/)).toBeInTheDocument()
@@ -63,6 +63,23 @@ describe('AuthModal', () => {
     expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Need an account? Sign up' }))
     expect(screen.getByRole('heading', { name: 'Create an account' })).toBeInTheDocument()
+  })
+
+  it('toggles password visibility', async () => {
+    const user = userEvent.setup()
+    render(<AuthModal open initialMode="sign-in" onClose={() => {}} />)
+
+    const passwordInput = screen.getByLabelText(/^Password/, { selector: 'input' })
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    await user.type(passwordInput, 'secret1')
+    await user.click(screen.getByRole('button', { name: 'Show password' }))
+
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'Hide password' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
   })
 
   it('explains unavailable accounts without naming infrastructure', () => {
