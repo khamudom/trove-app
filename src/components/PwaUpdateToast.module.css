@@ -1,7 +1,7 @@
 .bar {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--nav-height) + var(--space-4));
+  bottom: calc(var(--nav-height) + var(--space-4) + var(--space-10));
   transform: translateX(-50%);
   z-index: 40;
   width: min(calc(100% - 2 * var(--space-4)), 26rem);
