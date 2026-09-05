@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -26,6 +26,14 @@ const bin = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
 
+const destinationBin = {
+  id: 'bin-2',
+  name: 'Garage Shelf',
+  tags: [],
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+}
+
 const mocks = vi.hoisted(() => ({
   isSignedIn: true,
   refresh: vi.fn(),
@@ -34,6 +42,7 @@ const mocks = vi.hoisted(() => ({
     getBinWithItems: vi.fn(),
     createItem: vi.fn(),
     updateItem: vi.fn(),
+    moveItem: vi.fn(),
     deleteItem: vi.fn(),
     updateBin: vi.fn(),
     deleteBin: vi.fn(),
@@ -53,6 +62,11 @@ vi.mock('@/features/auth/AuthContext', () => ({
 }))
 
 vi.mock('@/hooks/useBins', () => ({
+  useBins: () => ({
+    bins: [bin, destinationBin],
+    loading: false,
+    refresh: vi.fn(),
+  }),
   useBinDetail: () => ({
     bin,
     loading: false,
@@ -95,6 +109,48 @@ describe('BinDetailPage back navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Back to bins' }))
 
     expect(screen.getByText('All bins')).toBeInTheDocument()
+  })
+})
+
+describe('BinDetailPage move item', () => {
+  beforeEach(() => {
+    mocks.isSignedIn = true
+    mocks.refresh.mockReset()
+    mocks.repo.moveItem.mockReset()
+    document.body.innerHTML = ''
+  })
+
+  it('moves an item after choosing a bin and confirming', async () => {
+    const user = userEvent.setup()
+    mocks.repo.moveItem.mockResolvedValue({
+      ...bin.items[0],
+      binId: destinationBin.id,
+    })
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Move' }))
+    expect(await screen.findByRole('heading', { name: 'Move item' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: destinationBin.name }))
+
+    expect(await screen.findByText('Move "Cordless drill" to "Garage Shelf"?')).toBeInTheDocument()
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Move' }))
+
+    await waitFor(() => {
+      expect(mocks.repo.moveItem).toHaveBeenCalledWith('item-1', 'bin-2')
+      expect(mocks.refresh).toHaveBeenCalled()
+    })
+  })
+
+  it('does not move an item when confirmation is canceled', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Move' }))
+    await user.click(await screen.findByRole('button', { name: destinationBin.name }))
+    await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+
+    expect(mocks.repo.moveItem).not.toHaveBeenCalled()
+    expect(screen.queryByText('Move "Cordless drill" to "Garage Shelf"?')).not.toBeInTheDocument()
   })
 })
 

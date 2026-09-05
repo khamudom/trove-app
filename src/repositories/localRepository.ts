@@ -166,6 +166,26 @@ export class LocalRepository implements TroveRepository {
     return updated
   }
 
+  async moveItem(id: string, binId: string): Promise<Item> {
+    const store = this.getStore()
+    const itemIndex = store.items.findIndex((item) => item.id === id)
+    if (itemIndex === -1) throw new Error('Item not found')
+    if (!store.bins.some((bin) => bin.id === binId)) throw new Error('Bin not found')
+
+    const current = store.items[itemIndex]
+    if (current.binId === binId) return current
+
+    const now = nowIso()
+    const updated = { ...current, binId, updatedAt: now }
+    const items = [...store.items]
+    items[itemIndex] = updated
+    const bins = store.bins.map((bin) =>
+      bin.id === current.binId || bin.id === binId ? { ...bin, updatedAt: now } : bin,
+    )
+    this.saveStore({ bins, items })
+    return updated
+  }
+
   async deleteItem(id: string): Promise<void> {
     const store = this.getStore()
     this.saveStore({

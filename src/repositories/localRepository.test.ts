@@ -32,6 +32,34 @@ describe('LocalRepository', () => {
     expect(items).toHaveLength(2)
   })
 
+  it('moves an item to another bin', async () => {
+    const repo = new LocalRepository()
+    const timestamp = '2026-01-01T00:00:00.000Z'
+    await repo.importSnapshot({
+      bins: [
+        { id: 'bin-1', name: 'Toolbox', tags: [], createdAt: timestamp, updatedAt: timestamp },
+        { id: 'bin-2', name: 'Garage Shelf', tags: [], createdAt: timestamp, updatedAt: timestamp },
+      ],
+      items: [
+        {
+          id: 'item-1',
+          binId: 'bin-1',
+          name: 'Cordless drill',
+          tags: [],
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+      exportedAt: timestamp,
+    })
+
+    const moved = await repo.moveItem('item-1', 'bin-2')
+
+    expect(moved.binId).toBe('bin-2')
+    expect(await repo.listItems('bin-1')).toEqual([])
+    expect(await repo.listItems('bin-2')).toEqual([moved])
+  })
+
   it('searches items and navigates by bin id', async () => {
     const repo = new LocalRepository()
     const bin = await repo.createBin({ name: 'Toolbox' })
