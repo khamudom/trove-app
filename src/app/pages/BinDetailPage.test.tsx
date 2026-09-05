@@ -169,7 +169,7 @@ describe('BinDetailPage move items', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Select Cordless drill' }))
     await user.click(screen.getByRole('button', { name: 'Move selected' }))
     await user.click(await screen.findByRole('button', { name: destinationBin.name }))
-    await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancel' }))
 
     expect(mocks.repo.moveItem).not.toHaveBeenCalled()
     expect(screen.queryByText('Move 1 item to "Garage Shelf"?')).not.toBeInTheDocument()
