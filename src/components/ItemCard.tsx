@@ -7,11 +7,21 @@ interface ItemCardProps {
   image?: string
   tags?: string[]
   highlighted?: boolean
+  onMove?: () => void
   onEdit?: () => void
   onDelete?: () => void
 }
 
-export function ItemCard({ name, description, image, tags = [], highlighted = false, onEdit, onDelete }: ItemCardProps) {
+export function ItemCard({
+  name,
+  description,
+  image,
+  tags = [],
+  highlighted = false,
+  onMove,
+  onEdit,
+  onDelete,
+}: ItemCardProps) {
   return (
     <Card className={`${styles.card} ${highlighted ? styles.highlighted : ''}`}>
       <div className={styles.lead}>
@@ -30,8 +40,9 @@ export function ItemCard({ name, description, image, tags = [], highlighted = fa
           </ul>
         )}
       </div>
-      {(onEdit || onDelete) && (
+      {(onMove || onEdit || onDelete) && (
         <div className={styles.actions}>
+          {onMove && <Button variant="ghost" onClick={onMove}>Move</Button>}
           {onEdit && <Button variant="ghost" onClick={onEdit}>Edit</Button>}
           {onDelete && <Button variant="ghost" onClick={onDelete}>Delete</Button>}
         </div>

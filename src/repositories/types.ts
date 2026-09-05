@@ -21,6 +21,7 @@ export interface TroveRepository {
   listItems(binId: string): Promise<Item[]>
   createItem(input: CreateItemInput): Promise<Item>
   updateItem(id: string, input: UpdateItemInput): Promise<Item>
+  moveItem(id: string, binId: string): Promise<Item>
   deleteItem(id: string): Promise<void>
   search(query: string): Promise<SearchResult[]>
   exportSnapshot(): Promise<LocalSnapshot>

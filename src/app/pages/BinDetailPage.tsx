@@ -11,7 +11,7 @@ import { BinForm } from '@/features/bins/BinForm'
 import { ItemForm } from '@/features/items/ItemForm'
 import { useAuth } from '@/features/auth/AuthContext'
 import { trackRecentBin } from '@/repositories/localRepository'
-import { useBinDetail } from '@/hooks/useBins'
+import { useBinDetail, useBins } from '@/hooks/useBins'
 import styles from './BinDetailPage.module.css'
 
 const UNDO_TOAST_DURATION_MS = 4000
@@ -23,9 +23,12 @@ export function BinDetailPage() {
   const navigate = useNavigate()
   const { repo, isSignedIn } = useAuth()
   const { bin, loading, refresh } = useBinDetail(binId)
+  const { bins } = useBins()
   const [addItemOpen, setAddItemOpen] = useState(false)
   const [editBinOpen, setEditBinOpen] = useState(false)
   const [editItemId, setEditItemId] = useState<string | null>(null)
+  const [moveItemId, setMoveItemId] = useState<string | null>(null)
+  const [moveTargetBinId, setMoveTargetBinId] = useState<string | null>(null)
   const [deleteBinOpen, setDeleteBinOpen] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
   const [qrOpen, setQrOpen] = useState(false)
@@ -43,6 +46,12 @@ export function BinDetailPage() {
   }, [undoItemId])
 
   const editingItem = useMemo(() => bin?.items.find((item) => item.id === editItemId), [bin, editItemId])
+  const movingItem = useMemo(() => bin?.items.find((item) => item.id === moveItemId), [bin, moveItemId])
+  const destinationBins = useMemo(() => bins.filter((candidate) => candidate.id !== binId), [binId, bins])
+  const moveTargetBin = useMemo(
+    () => bins.find((candidate) => candidate.id === moveTargetBinId),
+    [bins, moveTargetBinId],
+  )
 
   if (loading) return <p className={styles.loading}>Loading…</p>
   if (!bin) {
@@ -121,6 +130,7 @@ export function BinDetailPage() {
                 image={item.image}
                 tags={item.tags}
                 highlighted={item.id === highlightItemId}
+                onMove={() => setMoveItemId(item.id)}
                 onEdit={() => setEditItemId(item.id)}
                 onDelete={() => setDeleteItemId(item.id)}
               />
@@ -183,6 +193,35 @@ export function BinDetailPage() {
         )}
       </Drawer>
 
+      <Dialog
+        open={Boolean(moveItemId && !moveTargetBinId)}
+        heading="Move item"
+        onOpenChange={(open) => {
+          if (!open) setMoveItemId(null)
+        }}
+      >
+        {destinationBins.length > 0 ? (
+          <>
+            <p className={styles.movePrompt}>Choose a destination bin.</p>
+            <ul className={styles.binChoices}>
+              {destinationBins.map((destination) => (
+                <li key={destination.id}>
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    onClick={() => setMoveTargetBinId(destination.id)}
+                  >
+                    {destination.name}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className={styles.movePrompt}>Create another bin before moving this item.</p>
+        )}
+      </Dialog>
+
       <Dialog open={editBinOpen} heading="Edit bin" onOpenChange={setEditBinOpen}>
         <BinForm
           initial={bin}
@@ -206,6 +245,32 @@ export function BinDetailPage() {
           await refresh()
           const updated = await repo.getBin(bin.id)
           if (updated?.qrToken) setQrOpen(true)
+        }}
+      />
+
+      <AlertDialog
+        open={Boolean(moveItemId && moveTargetBinId)}
+        role="alertdialog"
+        title="Move item?"
+        description={
+          movingItem && moveTargetBin
+            ? `Move "${movingItem.name}" to "${moveTargetBin.name}"?`
+            : 'Move this item to the selected bin?'
+        }
+        cancelLabel="Cancel"
+        actionLabel="Move"
+        onOpenChange={(open) => {
+          if (!open) {
+            setMoveItemId(null)
+            setMoveTargetBinId(null)
+          }
+        }}
+        onAction={() => {
+          if (moveItemId && moveTargetBinId) {
+            void repo.moveItem(moveItemId, moveTargetBinId).then(() => refresh())
+          }
+          setMoveItemId(null)
+          setMoveTargetBinId(null)
         }}
       />
 

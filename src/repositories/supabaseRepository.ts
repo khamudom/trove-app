@@ -178,6 +178,33 @@ export class SupabaseRepository implements TroveRepository {
     return mapItem(data as ItemRow)
   }
 
+  async moveItem(id: string, binId: string): Promise<Item> {
+    const client = this.requireClient()
+    const { data: current, error: currentError } = await client
+      .from('items')
+      .select('bin_id')
+      .eq('id', id)
+      .maybeSingle()
+    if (currentError) throw currentError
+    if (!current) throw new Error('Item not found')
+    if (current.bin_id === binId) {
+      const item = await client.from('items').select('*').eq('id', id).single()
+      if (item.error) throw item.error
+      return mapItem(item.data as ItemRow)
+    }
+
+    const now = nowIso()
+    const { data, error } = await client
+      .from('items')
+      .update({ bin_id: binId, updated_at: now })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (error) throw error
+    await client.from('bins').update({ updated_at: now }).in('id', [current.bin_id, binId])
+    return mapItem(data as ItemRow)
+  }
+
   async deleteItem(id: string): Promise<void> {
     const { error } = await this.requireClient().from('items').delete().eq('id', id)
     if (error) throw error
