@@ -27,7 +27,9 @@ export function BinDetailPage() {
   const [addItemOpen, setAddItemOpen] = useState(false)
   const [editBinOpen, setEditBinOpen] = useState(false)
   const [editItemId, setEditItemId] = useState<string | null>(null)
-  const [moveItemId, setMoveItemId] = useState<string | null>(null)
+  const [moveMode, setMoveMode] = useState(false)
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false)
   const [moveTargetBinId, setMoveTargetBinId] = useState<string | null>(null)
   const [deleteBinOpen, setDeleteBinOpen] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
@@ -46,7 +48,6 @@ export function BinDetailPage() {
   }, [undoItemId])
 
   const editingItem = useMemo(() => bin?.items.find((item) => item.id === editItemId), [bin, editItemId])
-  const movingItem = useMemo(() => bin?.items.find((item) => item.id === moveItemId), [bin, moveItemId])
   const destinationBins = useMemo(() => bins.filter((candidate) => candidate.id !== binId), [binId, bins])
   const moveTargetBin = useMemo(
     () => bins.find((candidate) => candidate.id === moveTargetBinId),
@@ -70,6 +71,21 @@ export function BinDetailPage() {
       return
     }
     setQrOpen(true)
+  }
+
+  const cancelMove = () => {
+    setMoveMode(false)
+    setSelectedItemIds([])
+    setMoveDialogOpen(false)
+    setMoveTargetBinId(null)
+  }
+
+  const toggleSelectedItem = (itemId: string, selected: boolean) => {
+    setSelectedItemIds((current) => (
+      selected
+        ? [...current, itemId]
+        : current.filter((selectedId) => selectedId !== itemId)
+    ))
   }
 
   return (
@@ -106,14 +122,58 @@ export function BinDetailPage() {
       </div>
 
       <div className={styles.actions}>
-        <Button variant="secondary" onClick={() => setAddItemOpen(true)}>Add item</Button>
-        <Button variant="secondary" onClick={openQr}>QR label</Button>
-        <Button variant="ghost" onClick={() => setEditBinOpen(true)}>Edit bin</Button>
-        <Button variant="ghost" onClick={() => setDeleteBinOpen(true)}>Delete bin</Button>
+        <Button icon={<Icons.Plus />} variant="secondary" onClick={() => setAddItemOpen(true)}>Add item</Button>
+        <Button icon={<Icons.Qr />} variant="secondary" onClick={openQr}>QR label</Button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label="Edit bin"
+          onClick={() => setEditBinOpen(true)}
+        >
+          <Icons.Edit className={styles.actionIcon} />
+        </button>
+        <button
+          type="button"
+          className={`${styles.iconButton} ${styles.deleteButton}`}
+          aria-label="Delete bin"
+          onClick={() => setDeleteBinOpen(true)}
+        >
+          <Icons.Delete className={styles.actionIcon} />
+        </button>
+        {bin.items.length > 0 && (
+          <button
+            type="button"
+            className={`${styles.iconButton} ${moveMode ? styles.activeIconButton : ''}`}
+            aria-label={moveMode ? 'Cancel moving items' : 'Move items'}
+            aria-pressed={moveMode}
+            onClick={() => {
+              if (moveMode) cancelMove()
+              else setMoveMode(true)
+            }}
+          >
+            <Icons.Move className={styles.actionIcon} />
+          </button>
+        )}
       </div>
 
       <section>
-        <h2 className={styles.itemsTitle}>What's inside</h2>
+        <div className={styles.itemsHeading}>
+          <h2 className={styles.itemsTitle}>What's inside</h2>
+          {moveMode && (
+            <div className={styles.selectionActions}>
+              <span aria-live="polite">
+                {selectedItemIds.length} {selectedItemIds.length === 1 ? 'item' : 'items'} selected
+              </span>
+              <Button variant="ghost" onClick={cancelMove}>Cancel</Button>
+              <Button
+                disabled={selectedItemIds.length === 0}
+                onClick={() => setMoveDialogOpen(true)}
+              >
+                Move selected
+              </Button>
+            </div>
+          )}
+        </div>
         {bin.items.length === 0 ? (
           <EmptyState
             title="Nothing here yet"
@@ -130,9 +190,11 @@ export function BinDetailPage() {
                 image={item.image}
                 tags={item.tags}
                 highlighted={item.id === highlightItemId}
-                onMove={() => setMoveItemId(item.id)}
-                onEdit={() => setEditItemId(item.id)}
-                onDelete={() => setDeleteItemId(item.id)}
+                selectable={moveMode}
+                selected={selectedItemIds.includes(item.id)}
+                onSelectedChange={(selected) => toggleSelectedItem(item.id, selected)}
+                onEdit={moveMode ? undefined : () => setEditItemId(item.id)}
+                onDelete={moveMode ? undefined : () => setDeleteItemId(item.id)}
               />
             ))}
           </div>
@@ -194,10 +256,10 @@ export function BinDetailPage() {
       </Drawer>
 
       <Dialog
-        open={Boolean(moveItemId && !moveTargetBinId)}
-        heading="Move item"
+        open={moveDialogOpen && !moveTargetBinId}
+        heading="Move selected items"
         onOpenChange={(open) => {
-          if (!open) setMoveItemId(null)
+          setMoveDialogOpen(open)
         }}
       >
         {destinationBins.length > 0 ? (
@@ -209,7 +271,10 @@ export function BinDetailPage() {
                   <Button
                     variant="secondary"
                     fullWidth
-                    onClick={() => setMoveTargetBinId(destination.id)}
+                    onClick={() => {
+                      setMoveDialogOpen(false)
+                      setMoveTargetBinId(destination.id)
+                    }}
                   >
                     {destination.name}
                   </Button>
@@ -218,7 +283,7 @@ export function BinDetailPage() {
             </ul>
           </>
         ) : (
-          <p className={styles.movePrompt}>Create another bin before moving this item.</p>
+          <p className={styles.movePrompt}>Create another bin before moving selected items.</p>
         )}
       </Dialog>
 
@@ -249,28 +314,28 @@ export function BinDetailPage() {
       />
 
       <AlertDialog
-        open={Boolean(moveItemId && moveTargetBinId)}
+        open={Boolean(moveTargetBinId)}
         role="alertdialog"
-        title="Move item?"
+        title="Move selected items?"
         description={
-          movingItem && moveTargetBin
-            ? `Move "${movingItem.name}" to "${moveTargetBin.name}"?`
-            : 'Move this item to the selected bin?'
+          moveTargetBin
+            ? `Move ${selectedItemIds.length} ${selectedItemIds.length === 1 ? 'item' : 'items'} to "${moveTargetBin.name}"?`
+            : 'Move the selected items to this bin?'
         }
         cancelLabel="Cancel"
         actionLabel="Move"
         onOpenChange={(open) => {
           if (!open) {
-            setMoveItemId(null)
             setMoveTargetBinId(null)
           }
         }}
         onAction={() => {
-          if (moveItemId && moveTargetBinId) {
-            void repo.moveItem(moveItemId, moveTargetBinId).then(() => refresh())
+          if (selectedItemIds.length > 0 && moveTargetBinId) {
+            void Promise.all(
+              selectedItemIds.map((itemId) => repo.moveItem(itemId, moveTargetBinId)),
+            ).then(() => refresh())
           }
-          setMoveItemId(null)
-          setMoveTargetBinId(null)
+          cancelMove()
         }}
       />
 

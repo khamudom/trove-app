@@ -21,6 +21,14 @@ const bin = {
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
     },
+    {
+      id: 'item-2',
+      binId: 'bin-1',
+      name: 'Claw hammer',
+      tags: ['tool'],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    },
   ],
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -112,7 +120,7 @@ describe('BinDetailPage back navigation', () => {
   })
 })
 
-describe('BinDetailPage move item', () => {
+describe('BinDetailPage move items', () => {
   beforeEach(() => {
     mocks.isSignedIn = true
     mocks.refresh.mockReset()
@@ -120,37 +128,52 @@ describe('BinDetailPage move item', () => {
     document.body.innerHTML = ''
   })
 
-  it('moves an item after choosing a bin and confirming', async () => {
+  it('selects and moves multiple items after choosing a bin and confirming', async () => {
     const user = userEvent.setup()
-    mocks.repo.moveItem.mockResolvedValue({
-      ...bin.items[0],
+    mocks.repo.moveItem.mockImplementation(async (itemId: string) => ({
+      ...bin.items.find((item) => item.id === itemId),
       binId: destinationBin.id,
-    })
+    }))
     renderPage()
 
-    await user.click(screen.getByRole('button', { name: 'Move' }))
-    expect(await screen.findByRole('heading', { name: 'Move item' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Move items' }))
+    const firstItem = screen.getByRole('checkbox', { name: 'Select Cordless drill' })
+    const secondItem = screen.getByRole('checkbox', { name: 'Select Claw hammer' })
+    await user.click(firstItem)
+    await user.click(secondItem)
+
+    expect(firstItem).toBeChecked()
+    expect(secondItem).toBeChecked()
+    expect(screen.getByText('2 items selected')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Move selected' }))
+    expect(await screen.findByRole('heading', { name: 'Move selected items' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: destinationBin.name }))
 
-    expect(await screen.findByText('Move "Cordless drill" to "Garage Shelf"?')).toBeInTheDocument()
+    expect(await screen.findByText('Move 2 items to "Garage Shelf"?')).toBeInTheDocument()
     await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Move' }))
 
     await waitFor(() => {
       expect(mocks.repo.moveItem).toHaveBeenCalledWith('item-1', 'bin-2')
+      expect(mocks.repo.moveItem).toHaveBeenCalledWith('item-2', 'bin-2')
+      expect(mocks.repo.moveItem).toHaveBeenCalledTimes(2)
       expect(mocks.refresh).toHaveBeenCalled()
     })
   })
 
-  it('does not move an item when confirmation is canceled', async () => {
+  it('does not move selected items when confirmation is canceled', async () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.click(screen.getByRole('button', { name: 'Move' }))
+    await user.click(screen.getByRole('button', { name: 'Move items' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Select Cordless drill' }))
+    await user.click(screen.getByRole('button', { name: 'Move selected' }))
     await user.click(await screen.findByRole('button', { name: destinationBin.name }))
-    await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancel' }))
 
     expect(mocks.repo.moveItem).not.toHaveBeenCalled()
-    expect(screen.queryByText('Move "Cordless drill" to "Garage Shelf"?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Move 1 item to "Garage Shelf"?')).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Select Cordless drill' })).toBeChecked()
   })
 })
 
