@@ -7,6 +7,9 @@ interface ItemCardProps {
   image?: string
   tags?: string[]
   highlighted?: boolean
+  selectable?: boolean
+  selected?: boolean
+  onSelectedChange?: (selected: boolean) => void
   onMove?: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -18,12 +21,36 @@ export function ItemCard({
   image,
   tags = [],
   highlighted = false,
+  selectable = false,
+  selected = false,
+  onSelectedChange,
   onMove,
   onEdit,
   onDelete,
 }: ItemCardProps) {
   return (
-    <Card className={`${styles.card} ${highlighted ? styles.highlighted : ''}`}>
+    <Card
+      interactive={selectable}
+      className={[
+        styles.card,
+        highlighted ? styles.highlighted : '',
+        selected ? styles.selected : '',
+        selectable ? styles.selectable : '',
+      ].filter(Boolean).join(' ')}
+      onClick={(event) => {
+        if (!selectable || !onSelectedChange || (event.target as HTMLElement).closest('input, button')) return
+        onSelectedChange(!selected)
+      }}
+    >
+      {selectable && (
+        <input
+          type="checkbox"
+          className={styles.checkbox}
+          checked={selected}
+          aria-label={`Select ${name}`}
+          onChange={(event) => onSelectedChange?.(event.target.checked)}
+        />
+      )}
       <div className={styles.lead}>
         {image ? <img src={image} alt="" className={styles.image} loading="lazy" /> : <div className={styles.placeholder} aria-hidden />}
       </div>

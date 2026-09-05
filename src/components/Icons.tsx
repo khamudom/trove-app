@@ -80,6 +80,30 @@ Icons.Plus = function PlusIcon({ className }: { className?: string }) {
   )
 }
 
+Icons.Edit = function EditIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="m14.5 5.5 4 4M4 20l3.5-.75L19 7.75a1.75 1.75 0 0 0 0-2.5l-.25-.25a1.75 1.75 0 0 0-2.5 0L4.75 16.5 4 20Z" />
+    </svg>
+  )
+}
+
+Icons.Delete = function DeleteIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
+    </svg>
+  )
+}
+
+Icons.Move = function MoveIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M5 12h14M14 7l5 5-5 5" />
+    </svg>
+  )
+}
+
 Icons.Qr = function QrIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
