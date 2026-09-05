@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -133,7 +133,7 @@ describe('BinDetailPage move item', () => {
     await user.click(screen.getByRole('button', { name: destinationBin.name }))
 
     expect(await screen.findByText('Move "Cordless drill" to "Garage Shelf"?')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Move' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Move' }))
 
     await waitFor(() => {
       expect(mocks.repo.moveItem).toHaveBeenCalledWith('item-1', 'bin-2')
