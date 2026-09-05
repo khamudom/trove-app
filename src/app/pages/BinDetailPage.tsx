@@ -257,7 +257,7 @@ export function BinDetailPage() {
 
       <Dialog
         open={moveDialogOpen && !moveTargetBinId}
-        heading={`Move ${selectedItemIds.length === 1 ? 'item' : 'items'}`}
+        heading="Move selected items"
         onOpenChange={(open) => {
           setMoveDialogOpen(open)
         }}
@@ -283,7 +283,7 @@ export function BinDetailPage() {
             </ul>
           </>
         ) : (
-          <p className={styles.movePrompt}>Create another bin before moving this item.</p>
+          <p className={styles.movePrompt}>Create another bin before moving selected items.</p>
         )}
       </Dialog>
 
@@ -316,7 +316,7 @@ export function BinDetailPage() {
       <AlertDialog
         open={Boolean(moveTargetBinId)}
         role="alertdialog"
-        title={`Move ${selectedItemIds.length === 1 ? 'item' : 'items'}?`}
+        title="Move selected items?"
         description={
           moveTargetBin
             ? `Move ${selectedItemIds.length} ${selectedItemIds.length === 1 ? 'item' : 'items'} to "${moveTargetBin.name}"?`

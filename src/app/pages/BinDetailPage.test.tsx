@@ -147,7 +147,7 @@ describe('BinDetailPage move items', () => {
     expect(screen.getByText('2 items selected')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Move selected' }))
-    expect(await screen.findByRole('heading', { name: 'Move items' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Move selected items' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: destinationBin.name }))
 
     expect(await screen.findByText('Move 2 items to "Garage Shelf"?')).toBeInTheDocument()
