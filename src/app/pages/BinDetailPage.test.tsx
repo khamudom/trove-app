@@ -45,6 +45,8 @@ const destinationBin = {
 const mocks = vi.hoisted(() => ({
   isSignedIn: true,
   refresh: vi.fn(),
+  prepareItemImage: vi.fn(),
+  extractItemFromImage: vi.fn(),
   repo: {
     getBin: vi.fn(),
     getBinWithItems: vi.fn(),
@@ -84,6 +86,14 @@ vi.mock('@/hooks/useBins', () => ({
 
 vi.mock('@/repositories/localRepository', () => ({
   trackRecentBin: vi.fn(),
+}))
+
+vi.mock('@/features/items/prepareItemImage', () => ({
+  prepareItemImage: mocks.prepareItemImage,
+}))
+
+vi.mock('@/features/items/extractItemFromImage', () => ({
+  extractItemFromImage: mocks.extractItemFromImage,
 }))
 
 vi.mock('qrcode', () => ({
@@ -252,5 +262,94 @@ describe('BinDetailPage undo toast', () => {
     await waitFor(() => {
       expect(screen.queryByText('Item added.')).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('BinDetailPage add from photos', () => {
+  const items = bin.items
+
+  beforeEach(() => {
+    mocks.isSignedIn = true
+    mocks.refresh.mockReset()
+    mocks.repo.createItem.mockReset()
+    mocks.prepareItemImage.mockReset()
+    mocks.extractItemFromImage.mockReset()
+    document.body.innerHTML = ''
+    bin.items = items
+  })
+
+  afterEach(() => {
+    bin.items = items
+  })
+
+  it('opens the photo library for multiple images and not the camera', () => {
+    renderPage()
+
+    const input = screen.getByLabelText('Choose photos')
+    expect(input).toHaveAttribute('accept', 'image/*')
+    expect(input).toHaveAttribute('multiple')
+    expect(input).not.toHaveAttribute('capture')
+    expect(screen.getByRole('button', { name: 'Add from photos' })).toBeEnabled()
+  })
+
+  it('creates an item for each selected photo from the AI details', async () => {
+    const user = userEvent.setup()
+    const resolvers: Array<(value: { name?: string; description?: string; tags?: string[] }) => void> = []
+    mocks.prepareItemImage.mockResolvedValue('data:image/jpeg;base64,photo')
+    mocks.extractItemFromImage.mockImplementation(() => new Promise((resolve) => {
+      resolvers.push(resolve)
+    }))
+    mocks.repo.createItem.mockImplementation(async (input: { name: string }) => ({
+      id: input.name,
+      binId: 'bin-1',
+      name: input.name,
+      tags: [],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }))
+
+    renderPage()
+    const input = screen.getByLabelText('Choose photos')
+    await user.upload(input, [
+      new File(['coat'], 'coat.jpg', { type: 'image/jpeg' }),
+      new File(['hat'], 'hat.jpg', { type: 'image/jpeg' }),
+    ])
+
+    expect(await screen.findByText('Identifying photo 1 of 2…')).toBeInTheDocument()
+    expect(screen.getByText('Each photo becomes an item. Edit it afterward if a detail looks wrong.')).toBeInTheDocument()
+    resolvers[0]({ name: 'Wool coat', description: 'Gray', tags: ['winter'] })
+
+    await waitFor(() => expect(mocks.extractItemFromImage).toHaveBeenCalledTimes(2))
+    expect(await screen.findByText('Identifying photo 2 of 2…')).toBeInTheDocument()
+    resolvers[1]({ name: 'Knit hat', tags: ['winter'] })
+
+    expect(await screen.findByText('Added 2 items from photos. Edit any that look wrong.')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Adding from photos' })).not.toBeInTheDocument()
+    expect(mocks.extractItemFromImage).toHaveBeenCalledWith('data:image/jpeg;base64,photo', {
+      binName: 'Toolbox',
+      category: 'Tools',
+      location: 'Garage Workbench',
+    })
+    expect(mocks.repo.createItem).toHaveBeenNthCalledWith(1, {
+      binId: 'bin-1',
+      name: 'Wool coat',
+      image: 'data:image/jpeg;base64,photo',
+      tags: ['winter'],
+    })
+    expect(mocks.repo.createItem).toHaveBeenNthCalledWith(2, {
+      binId: 'bin-1',
+      name: 'Knit hat',
+      image: 'data:image/jpeg;base64,photo',
+      tags: ['winter'],
+    })
+    expect(mocks.refresh).toHaveBeenCalled()
+  })
+
+  it('also offers photo import from an empty bin', () => {
+    bin.items = []
+    renderPage()
+
+    expect(screen.getAllByRole('button', { name: 'Add from photos' })).toHaveLength(2)
+    expect(screen.getByText('Nothing here yet')).toBeInTheDocument()
   })
 })

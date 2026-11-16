@@ -139,6 +139,17 @@ Icons.Chevron = function ChevronIcon({ className }: { className?: string }) {
   )
 }
 
+Icons.Photos = function PhotosIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="6" width="14" height="12" rx="2" />
+      <path d="M8 18.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-1.5" />
+      <circle cx="7.5" cy="10" r="1" />
+      <path d="m3.5 15.5 3-2.5 3 2.5 2.5-2 4.5 3.5" />
+    </svg>
+  )
+}
+
 Icons.Camera = function CameraIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
