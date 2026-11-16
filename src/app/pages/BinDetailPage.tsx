@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AlertDialog, Badge, Button, Dialog, Drawer, Toast } from '@khamudom/lumen-ui-react'
 import { EmptyState } from '@/components/EmptyState'
@@ -8,6 +8,12 @@ import { PageHeader } from '@/components/PageHeader'
 import { QRLabel } from '@/components/QRLabel'
 import { AuthGateSheet } from '@/features/auth/AuthGateSheet'
 import { BinForm } from '@/features/bins/BinForm'
+import {
+  MAX_PHOTOS_PER_BATCH,
+  addItemsFromPhotos,
+  isPhotoFile,
+  photoBatchNotice,
+} from '@/features/items/addItemsFromPhotos'
 import { ItemForm } from '@/features/items/ItemForm'
 import { useAuth } from '@/features/auth/AuthContext'
 import { trackRecentBin } from '@/repositories/localRepository'
@@ -15,6 +21,7 @@ import { useBinDetail, useBins } from '@/hooks/useBins'
 import styles from './BinDetailPage.module.css'
 
 const UNDO_TOAST_DURATION_MS = 4000
+const PHOTO_NOTICE_DURATION_MS = 6000
 
 export function BinDetailPage() {
   const { binId = '' } = useParams()
@@ -36,6 +43,11 @@ export function BinDetailPage() {
   const [qrOpen, setQrOpen] = useState(false)
   const [authGateOpen, setAuthGateOpen] = useState(false)
   const [undoItemId, setUndoItemId] = useState<string | null>(null)
+  const [addingPhotos, setAddingPhotos] = useState(false)
+  const [photoProgress, setPhotoProgress] = useState<string | null>(null)
+  const [photoNotice, setPhotoNotice] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const photoRunActive = useRef(true)
 
   useEffect(() => {
     if (binId) trackRecentBin(binId)
@@ -46,6 +58,19 @@ export function BinDetailPage() {
     const timer = window.setTimeout(() => setUndoItemId(null), UNDO_TOAST_DURATION_MS)
     return () => window.clearTimeout(timer)
   }, [undoItemId])
+
+  useEffect(() => {
+    photoRunActive.current = true
+    return () => {
+      photoRunActive.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!photoNotice) return
+    const timer = window.setTimeout(() => setPhotoNotice(null), PHOTO_NOTICE_DURATION_MS)
+    return () => window.clearTimeout(timer)
+  }, [photoNotice])
 
   const editingItem = useMemo(() => bin?.items.find((item) => item.id === editItemId), [bin, editItemId])
   const destinationBins = useMemo(() => bins.filter((candidate) => candidate.id !== binId), [binId, bins])
@@ -63,6 +88,44 @@ export function BinDetailPage() {
         action={<Button onClick={() => navigate('/bins')}>Back to bins</Button>}
       />
     )
+  }
+
+  const addPhotos = async (files: File[]) => {
+    const photos = files.filter(isPhotoFile)
+    if (photos.length === 0) {
+      if (files.length > 0) setPhotoNotice('Choose photos to add.')
+      return
+    }
+
+    setPhotoNotice(null)
+    setAddingPhotos(true)
+    setPhotoProgress(`Identifying photo 1 of ${Math.min(photos.length, MAX_PHOTOS_PER_BATCH)}…`)
+    try {
+      const result = await addItemsFromPhotos(photos, {
+        context: {
+          binName: bin.name,
+          category: bin.category,
+          location: bin.location,
+        },
+        saveItem: async (item) => {
+          await repo.createItem({ binId: bin.id, ...item })
+        },
+        onProgress: ({ index, total }) => {
+          if (photoRunActive.current) setPhotoProgress(`Identifying photo ${index} of ${total}…`)
+        },
+      })
+      if (!photoRunActive.current) return
+      await refresh()
+      if (!photoRunActive.current) return
+      setPhotoNotice(photoBatchNotice(result))
+    } catch {
+      if (photoRunActive.current) setPhotoNotice('Could not add those photos. Try again.')
+    } finally {
+      if (photoRunActive.current) {
+        setAddingPhotos(false)
+        setPhotoProgress(null)
+      }
+    }
   }
 
   const openQr = () => {
@@ -123,6 +186,27 @@ export function BinDetailPage() {
 
       <div className={styles.actions}>
         <Button icon={<Icons.Plus />} variant="secondary" onClick={() => setAddItemOpen(true)}>Add item</Button>
+        <Button
+          icon={<Icons.Photos />}
+          variant="secondary"
+          disabled={addingPhotos}
+          onClick={() => photoInputRef.current?.click()}
+        >
+          Add from photos
+        </Button>
+        <input
+          ref={photoInputRef}
+          className={styles.fileInput}
+          type="file"
+          accept="image/*"
+          multiple
+          aria-label="Choose photos"
+          onChange={(event) => {
+            const files = [...(event.target.files ?? [])]
+            event.target.value = ''
+            void addPhotos(files)
+          }}
+        />
         <Button icon={<Icons.Qr />} variant="secondary" onClick={openQr}>QR label</Button>
         <button
           type="button"
@@ -178,7 +262,18 @@ export function BinDetailPage() {
           <EmptyState
             title="Nothing here yet"
             description="Add what's inside this bin so you won't have to open it next time."
-            action={<Button onClick={() => setAddItemOpen(true)}>Add item</Button>}
+            action={(
+              <div className={styles.emptyActions}>
+                <Button onClick={() => setAddItemOpen(true)}>Add item</Button>
+                <Button
+                  variant="secondary"
+                  disabled={addingPhotos}
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  Add from photos
+                </Button>
+              </div>
+            )}
           />
         ) : (
           <div className={styles.items}>
@@ -201,26 +296,43 @@ export function BinDetailPage() {
         )}
       </section>
 
-      {undoItemId && (
+      {(undoItemId || photoNotice) && (
         <div className={styles.undoBar}>
-          <Toast
-            title="Item added."
-            action={(
-              <Button
-                variant="ghost"
-                onClick={async () => {
-                  await repo.deleteItem(undoItemId)
-                  setUndoItemId(null)
-                  await refresh()
-                }}
-              >
-                Undo
-              </Button>
-            )}
-            onClose={() => setUndoItemId(null)}
-          />
+          {undoItemId ? (
+            <Toast
+              title="Item added."
+              action={(
+                <Button
+                  variant="ghost"
+                  onClick={async () => {
+                    await repo.deleteItem(undoItemId)
+                    setUndoItemId(null)
+                    await refresh()
+                  }}
+                >
+                  Undo
+                </Button>
+              )}
+              onClose={() => setUndoItemId(null)}
+            />
+          ) : (
+            <Toast title={photoNotice ?? ''} onClose={() => setPhotoNotice(null)} />
+          )}
         </div>
       )}
+
+      <Dialog
+        open={photoProgress !== null}
+        heading="Adding from photos"
+        onOpenChange={(open) => {
+          if (!open && !addingPhotos) setPhotoProgress(null)
+        }}
+      >
+        <div className={styles.photoStatus}>
+          <p className={styles.photoProgress} aria-live="polite">{photoProgress}</p>
+          <p>Each photo becomes an item. Edit it afterward if a detail looks wrong.</p>
+        </div>
+      </Dialog>
 
       <Dialog open={addItemOpen} heading="Add item" onOpenChange={setAddItemOpen}>
         <ItemForm
