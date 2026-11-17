@@ -112,7 +112,13 @@ img {
 
 @media (max-width: 640px) {
   .lumen-drawer__surface {
-    width: 100%;
+    inset-inline: 0;
+    width: auto;
+  }
+
+  .lumen-drawer {
+    transform: none !important;
+    transition: none;
   }
 }
 
