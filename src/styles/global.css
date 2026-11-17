@@ -115,11 +115,6 @@ img {
     inset-inline: 0;
     width: auto;
   }
-
-  .lumen-drawer {
-    transform: none !important;
-    transition: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
