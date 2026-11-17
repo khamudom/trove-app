@@ -342,7 +342,6 @@ export function BinDetailPage() {
       <Drawer
         open={Boolean(editingItem)}
         heading="Edit item"
-        right
         onOpenChange={(open) => {
           if (!open) setEditItemId(null)
         }}
