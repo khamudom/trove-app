@@ -61,7 +61,7 @@
 .photoPreview img {
   width: 100%;
   max-height: 12rem;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .removePhoto {
