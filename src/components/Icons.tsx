@@ -2,7 +2,20 @@ export function Icons() {
   return null
 }
 
-Icons.Home = function HomeIcon({ className }: { className?: string }) {
+type NavIconProps = {
+  className?: string
+  filled?: boolean
+}
+
+Icons.Home = function HomeIcon({ className, filled = false }: NavIconProps) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path fillRule="evenodd" d="M3 10.5 12 3l9 7.5V20a2 2 0 0 1-2 2h-6v-6h-2v6H5a2 2 0 0 1-2-2v-9.5Z" clipRule="evenodd" />
+      </svg>
+    )
+  }
+
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" />
@@ -10,7 +23,15 @@ Icons.Home = function HomeIcon({ className }: { className?: string }) {
   )
 }
 
-Icons.Bins = function BinsIcon({ className }: { className?: string }) {
+Icons.Bins = function BinsIcon({ className, filled = false }: NavIconProps) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M4 8h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8ZM7 3h10l4 4H3l4-4Z" />
+      </svg>
+    )
+  }
+
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <path d="M4 7h16v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7Z" />
@@ -28,7 +49,15 @@ Icons.Scan = function ScanIcon({ className }: { className?: string }) {
   )
 }
 
-Icons.Search = function SearchIcon({ className }: { className?: string }) {
+Icons.Search = function SearchIcon({ className, filled = false }: NavIconProps) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path fillRule="evenodd" d="M10.5 3a7.5 7.5 0 1 0 4.6 13.43l4.73 4.73 1.41-1.41-4.72-4.73A7.5 7.5 0 0 0 10.5 3Zm0 3a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z" clipRule="evenodd" />
+      </svg>
+    )
+  }
+
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <circle cx="11" cy="11" r="6" />
@@ -46,7 +75,16 @@ Icons.Enter = function EnterIcon({ className }: { className?: string }) {
   )
 }
 
-Icons.Profile = function ProfileIcon({ className }: { className?: string }) {
+Icons.Profile = function ProfileIcon({ className, filled = false }: NavIconProps) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0H4Z" />
+      </svg>
+    )
+  }
+
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
       <circle cx="12" cy="8" r="3.25" />

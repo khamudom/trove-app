@@ -13,8 +13,12 @@ export function BottomNavigation({ voiceControl }: { voiceControl: ReactNode }) 
           className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`}
           end={to === '/'}
         >
-          <Icon className={styles.icon} />
-          <span>{label}</span>
+          {({ isActive }) => (
+            <>
+              <Icon className={styles.icon} filled={isActive} />
+              <span>{label}</span>
+            </>
+          )}
         </NavLink>
       ))}
       {voiceControl}
@@ -25,8 +29,12 @@ export function BottomNavigation({ voiceControl }: { voiceControl: ReactNode }) 
           className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`}
           end={to === '/'}
         >
-          <Icon className={styles.icon} />
-          <span>{label}</span>
+          {({ isActive }) => (
+            <>
+              <Icon className={styles.icon} filled={isActive} />
+              <span>{label}</span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

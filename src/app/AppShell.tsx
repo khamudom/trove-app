@@ -172,15 +172,23 @@ export function AppShell() {
         <nav className={styles.sidebarNav}>
           {navItems.slice(0, 2).map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => `${styles.sidebarLink} ${isActive ? styles.active : ''}`} end={to === '/'}>
-              <Icon className={styles.sidebarIcon} />
-              {label}
+              {({ isActive }) => (
+                <>
+                  <Icon className={styles.sidebarIcon} filled={isActive} />
+                  {label}
+                </>
+              )}
             </NavLink>
           ))}
           {!isMobile && voiceControl}
           {navItems.slice(2).map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => `${styles.sidebarLink} ${isActive ? styles.active : ''}`} end={to === '/'}>
-              <Icon className={styles.sidebarIcon} />
-              {label}
+              {({ isActive }) => (
+                <>
+                  <Icon className={styles.sidebarIcon} filled={isActive} />
+                  {label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
