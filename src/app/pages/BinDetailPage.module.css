@@ -87,13 +87,6 @@
   white-space: nowrap;
 }
 
-.emptyActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-}
-
 .photoStatus {
   display: flex;
   flex-direction: column;
