@@ -92,6 +92,21 @@ describe('AppShell mobile page transitions', () => {
     expect(within(nav()).queryByRole('link', { name: 'Scan' })).not.toBeInTheDocument()
   })
 
+  it('fills only the active navigation icon', async () => {
+    const user = userEvent.setup()
+    const { nav } = renderShell()
+    const homeLink = within(nav()).getByRole('link', { name: 'Home' })
+    const binsLink = within(nav()).getByRole('link', { name: 'Bins' })
+
+    expect(homeLink.querySelector('svg')).toHaveAttribute('fill', 'currentColor')
+    expect(binsLink.querySelector('svg')).toHaveAttribute('fill', 'none')
+
+    await user.click(binsLink)
+
+    expect(homeLink.querySelector('svg')).toHaveAttribute('fill', 'none')
+    expect(binsLink.querySelector('svg')).toHaveAttribute('fill', 'currentColor')
+  })
+
   it('slides the first visit in from the right', async () => {
     const user = userEvent.setup()
     const { nav } = renderShell()
