@@ -110,6 +110,12 @@ img {
   font-family: var(--font-display);
 }
 
+@media (max-width: 640px) {
+  .lumen-drawer__surface {
+    width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
