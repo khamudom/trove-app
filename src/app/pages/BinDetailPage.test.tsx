@@ -187,6 +187,87 @@ describe('BinDetailPage move items', () => {
   })
 })
 
+function itemCard(name: string) {
+  const heading = screen.getByRole('heading', { name })
+  const card = heading.closest('.lumen-card')
+  if (!(card instanceof HTMLElement)) throw new Error(`Missing card for ${name}`)
+  return card
+}
+
+describe('BinDetailPage delete item', () => {
+  beforeEach(() => {
+    mocks.isSignedIn = true
+    mocks.refresh.mockReset()
+    mocks.repo.deleteItem.mockReset()
+    document.body.innerHTML = ''
+  })
+
+  it('removes the item immediately and keeps the rest of the page', async () => {
+    const user = userEvent.setup()
+    let resolveDelete: () => void = () => {}
+    mocks.repo.deleteItem.mockImplementation(
+      () => new Promise<void>((resolve) => {
+        resolveDelete = resolve
+      }),
+    )
+    renderPage()
+
+    await user.click(within(itemCard('Cordless drill')).getByRole('button', { name: 'Delete' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Delete item' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'Cordless drill' })).not.toBeInTheDocument()
+    })
+    expect(screen.getByRole('heading', { name: 'Toolbox' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Claw hammer' })).toBeInTheDocument()
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
+    expect(mocks.refresh).not.toHaveBeenCalled()
+    expect(mocks.repo.deleteItem).toHaveBeenCalledWith('item-1')
+
+    resolveDelete()
+    await waitFor(() => {
+      expect(mocks.refresh).toHaveBeenCalledWith({ background: true })
+    })
+    expect(screen.queryByRole('heading', { name: 'Cordless drill' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Toolbox' })).toBeInTheDocument()
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
+  })
+
+  it('leaves the item in the bin when deletion fails', async () => {
+    const user = userEvent.setup()
+    let rejectDelete: (error: Error) => void = () => {}
+    mocks.repo.deleteItem.mockImplementation(
+      () => new Promise<void>((_, reject) => {
+        rejectDelete = reject
+      }),
+    )
+    renderPage()
+
+    await user.click(within(itemCard('Cordless drill')).getByRole('button', { name: 'Delete' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Delete item' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'Cordless drill' })).not.toBeInTheDocument()
+    })
+
+    rejectDelete(new Error('Could not delete'))
+
+    expect(await screen.findByRole('heading', { name: 'Cordless drill' })).toBeInTheDocument()
+    expect(mocks.refresh).not.toHaveBeenCalled()
+  })
+
+  it('keeps the item when deletion is canceled', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(within(itemCard('Cordless drill')).getByRole('button', { name: 'Delete' }))
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByRole('heading', { name: 'Cordless drill' })).toBeInTheDocument()
+    expect(mocks.repo.deleteItem).not.toHaveBeenCalled()
+  })
+})
+
 describe('BinDetailPage QR label', () => {
   beforeEach(() => {
     mocks.isSignedIn = true
@@ -345,11 +426,12 @@ describe('BinDetailPage add from photos', () => {
     expect(mocks.refresh).toHaveBeenCalled()
   })
 
-  it('also offers photo import from an empty bin', () => {
+  it('keeps photo import in the page actions when the bin is empty', () => {
     bin.items = []
     renderPage()
 
-    expect(screen.getAllByRole('button', { name: 'Add from photos' })).toHaveLength(2)
+    expect(screen.getByRole('button', { name: 'Add item' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add from photos' })).toBeInTheDocument()
     expect(screen.getByText('Nothing here yet')).toBeInTheDocument()
   })
 })

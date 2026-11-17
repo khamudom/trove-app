@@ -40,6 +40,7 @@ export function BinDetailPage() {
   const [moveTargetBinId, setMoveTargetBinId] = useState<string | null>(null)
   const [deleteBinOpen, setDeleteBinOpen] = useState(false)
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
+  const [removedItems, setRemovedItems] = useState<{ binId: string, ids: string[] }>({ binId, ids: [] })
   const [qrOpen, setQrOpen] = useState(false)
   const [authGateOpen, setAuthGateOpen] = useState(false)
   const [undoItemId, setUndoItemId] = useState<string | null>(null)
@@ -73,6 +74,10 @@ export function BinDetailPage() {
   }, [photoNotice])
 
   const editingItem = useMemo(() => bin?.items.find((item) => item.id === editItemId), [bin, editItemId])
+  const visibleItems = useMemo(() => {
+    const removedItemIds = removedItems.binId === binId ? removedItems.ids : []
+    return (bin?.items ?? []).filter((item) => !removedItemIds.includes(item.id))
+  }, [bin, binId, removedItems])
   const destinationBins = useMemo(() => bins.filter((candidate) => candidate.id !== binId), [binId, bins])
   const moveTargetBin = useMemo(
     () => bins.find((candidate) => candidate.id === moveTargetBinId),
@@ -224,7 +229,7 @@ export function BinDetailPage() {
         >
           <Icons.Delete className={styles.actionIcon} />
         </button>
-        {bin.items.length > 0 && (
+        {visibleItems.length > 0 && (
           <button
             type="button"
             className={`${styles.iconButton} ${moveMode ? styles.activeIconButton : ''}`}
@@ -258,26 +263,14 @@ export function BinDetailPage() {
             </div>
           )}
         </div>
-        {bin.items.length === 0 ? (
+        {visibleItems.length === 0 ? (
           <EmptyState
             title="Nothing here yet"
             description="Add what's inside this bin so you won't have to open it next time."
-            action={(
-              <div className={styles.emptyActions}>
-                <Button onClick={() => setAddItemOpen(true)}>Add item</Button>
-                <Button
-                  variant="secondary"
-                  disabled={addingPhotos}
-                  onClick={() => photoInputRef.current?.click()}
-                >
-                  Add from photos
-                </Button>
-              </div>
-            )}
           />
         ) : (
           <div className={styles.items}>
-            {bin.items.map((item) => (
+            {visibleItems.map((item) => (
               <ItemCard
                 key={item.id}
                 name={item.name}
@@ -475,8 +468,23 @@ export function BinDetailPage() {
           if (!open) setDeleteItemId(null)
         }}
         onAction={() => {
-          if (deleteItemId) void repo.deleteItem(deleteItemId).then(() => refresh())
+          if (!deleteItemId) return
+          const itemId = deleteItemId
+          setRemovedItems((current) => {
+            const ids = current.binId === binId ? current.ids : []
+            return { binId, ids: ids.includes(itemId) ? ids : [...ids, itemId] }
+          })
           setDeleteItemId(null)
+          void repo.deleteItem(itemId).then(
+            () => refresh({ background: true }),
+            () => {
+              setRemovedItems((current) => (
+                current.binId === binId
+                  ? { binId, ids: current.ids.filter((id) => id !== itemId) }
+                  : current
+              ))
+            },
+          )
         }}
       />
     </div>
